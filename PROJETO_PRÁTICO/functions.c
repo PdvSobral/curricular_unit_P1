@@ -1,6 +1,3 @@
-// Makes so that the said macros/labels are not allowed in the program, raising errors
-// Might be useful for debugging
-#pragma GCC poison int unsigned short
 // Makes so that if "#define __main__" is not somewhere before this program is compiled an error ocurs, stopping compilation
 #ifndef __main__
 #pragma GCC error "This code is not meant to be compiled directly."

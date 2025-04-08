@@ -14,7 +14,7 @@ The pdf is present in the same repository as this program.
 
 #ifndef psystem
 	#include <stdio.h>		// printf, scanf
-	#include <stdlib.h>		// malloc, alloc
+	#include <stdlib.h>		// malloc, alloc (sem ela tmb tive algumas instabilidades com o uso de unsigneds)
 	#include <stdint.h>		// uint8_t
 	#include <string.h>		// strcmp, strlen
 	#pragma GCC warning "Loaded standard modules."
