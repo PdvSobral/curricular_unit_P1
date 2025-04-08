@@ -1,6 +1,6 @@
 /* Encoding: UTF-8
 @Authors: Pedro Sobral (33641), <Name> (<Numero>)
-@Date: 12/01/2025
+@Date: 08/04/2025
 @Links: Project github repository -> https://github.com/PdvSobral/<GITHUB>
 
 This program was developed as an answer to a problem described in a pdf file provided to us.
