@@ -19,7 +19,7 @@ The pdf is present in the same repository as this program.
 	#include <string.h>		// strcmp, strlen
 	#pragma GCC warning "Loaded standard modules."
 #else
-	#include <good_practices.c>
+	#include "good_practices.c"
 	// Basicly imports the four modules above
 	// Makes so that int, unsigned and other lables/macros are not usable
 	#pragma GCC warning "Loaded custom module."
