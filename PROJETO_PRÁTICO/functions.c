@@ -1,3 +1,11 @@
+/* Encoding: UTF-8
+@Authors: Pedro Sobral (33641), <Name> (<Numero>)
+@Date: 23/05/2025
+@Links: Project github repository -> https://github.com/PdvSobral/curricular_unit_P1
+
+This file contains the functions developed as an answer to a problem described in a pdf file provided to us.
+The pdf is present in the same repository as this program.
+*/
 // Makes so that if "#define __main__" is not somewhere before this program is compiled an error ocurs, stopping compilation
 #ifndef __main__
 #pragma GCC error "This code is not meant to be compiled directly."
