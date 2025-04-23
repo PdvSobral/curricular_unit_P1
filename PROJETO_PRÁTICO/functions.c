@@ -12,8 +12,8 @@
 #define MAX_INSTRUCTORS 10
 #define MAX_CLASSES 100
 #define CLASS_DURATION 3600 // in seconds
-#define DEBUG 0
-#define CLEAR 0
+#define DEBUG 1
+#define CLEAR 1
 
 // Especificações do programador
 #define LEN_NAME 70
@@ -74,11 +74,55 @@ typedef struct _self{
 	uint8_t classes_array_insert_index;
 } SELF;
 
-void clear_screen(void){
+#ifndef function_strlen2
+#define function_strlen2
+uint32_t strlen2(const char *str) {
+    uint32_t count = 0;
+    uint8_t *s = (uint8_t *)str;
+    while (*s != 0x00) {
+        if ((*s & 0x80) == 0) {
+            // 1-byte character (ASCII)
+            count++;
+            s++;
+        } else if ((*s & 0xE0) == 0xC0) {
+            // 2-byte character
+            count++;
+            s += 2;
+        } else if ((*s & 0xF0) == 0xE0) {
+            // 3-byte character
+            count++;
+            s += 3;
+        } else if ((*s & 0xF8) == 0xF0) {
+            // 4-byte character
+            count++;
+            s += 4;
+        } else {
+            // Invalid UTF-8 byte sequence
+            break;
+        }
+    }
+    return count;
+}
+#endif
+
+void clear_screen(){
 	/*
-	Uses escape characters
+		Clears the screen and sets the cursor at the upper right corner
 	*/
-	if(CLEAR) printf("\033[H\033[J");
+	printf("\033[2J\033[H");
+}
+void set_cursor(){
+	/*
+		Save the cursor position to return to later
+	*/
+	printf("\033[s");
+	return;
+}
+void reset_cursor(){
+	/*
+		Restore the cursor position to the previous saved state
+	*/
+	printf("\033[u");
 	return;
 }
 void flush_stdin(void){
@@ -149,8 +193,8 @@ void read_n_chars(uint8_t _len_to_read, char* pointer_to_write_to){
 		char*   pointer_to_write_to -> Onde os characteres lidos serão wuardados.
 	*/
 	char command[12] = " %";
-	my_itoa(_len_to_read, command+strlen(command), 10);
-	strcpy(command+strlen(command), "[^\n]");
+	my_itoa(_len_to_read, command+strlen2(command), 10);
+	strcpy(command+strlen2(command), "[^\n]");
 	scanf(command, pointer_to_write_to);
 	flush_stdin();
 }
@@ -223,7 +267,8 @@ int8_t strIsNum(char *str){
     return 0;
 }
 
-void cabecalho(char msg[], uint8_t len_cabecalho){
+
+void cabecalho(const char msg[], uint8_t len_cabecalho){
 	/*
 	Procedimento que imprime um cabeçalho
 	Argumentos:
@@ -232,44 +277,81 @@ void cabecalho(char msg[], uint8_t len_cabecalho){
 	Retorno:
 		Nenhum
 	*/
-	uint8_t _len = strlen(msg);
-	for(uint8_t _index = 0; _index<len_cabecalho; _index++){
-		printf("-");
-	} printf("\n");
+	uint8_t _len = strlen2(msg);
+	printf("┌");
+	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
+		printf("─");
+	} printf("┐\n│");
 	_len = (len_cabecalho - _len)/2;
-	for(uint8_t _index = 0; _index<_len; _index++){
+	for(uint8_t _index = 0; _index<_len-1; _index++){
 		printf(" ");
 	} printf("%s", msg);
-	for(uint8_t _index = 0; _index<_len; _index++){
+	for(uint8_t _index = 0; _index<_len-1; _index++){
 		printf(" ");
-	} printf("\n");
-	for(uint8_t _index = 0; _index<len_cabecalho; _index++){
-		printf("-");
-	} printf("\n");
+	} printf("│\n");
+	printf("└");
+	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
+		printf("─");
+	} printf("┘\n");
 	return;
 };
-int64_t menu(const char menu_options[][CABECALHO_LEN], uint8_t menu_size, uint8_t last_zero){
+void reset_line(){
+	set_cursor();
+	printf("\033[Am\033[0G");  // up one line and beggining
+	printf("├\033[%uC┤", CABECALHO_LEN-2);  // replace the line
+	reset_cursor();
+	return;
+};
+int64_t menu(const char tittle[], uint8_t len_cabecalho, const char menu_options[][CABECALHO_LEN], uint8_t menu_size, uint8_t last_zero){
 	/*
 	Função para apresentar ao utilizador um menu
 	Argumentos:
+		char tittle[]							 -> Tittle for the menu
 		const char menu_options[][CABECALHO_LEN] -> Array de strings a usar como opções do menu
 		uint8_t menu_size                        -> Número de opções a ler do array passado
 		uint8_t last_zero                        -> Torna a uĺtima opção sempre zero, independentemente das outras
 	Retorno:
 		int64_t -> Escolha do utilizador
 	*/
+	cabecalho(tittle, len_cabecalho);
+	reset_line();
 	char buffer[5];
 	int64_t _option;
 	for(uint8_t _index=0; _index<menu_size; _index++) {
-		if(_index+last_zero == menu_size) printf(" 0 - %s\n",  menu_options[_index]);
-		else printf("%2d - %s\n", _index + 1,  menu_options[_index]);
-	}
+		if(_index+last_zero == menu_size){
+			printf("│  0 - %s", menu_options[_index]);
+		} else {
+			printf("│ %2d - %s", _index + 1,  menu_options[_index]);
+		} 
+		printf("\033[%uC│\n", CABECALHO_LEN - 8 - (uint8_t) strlen2(menu_options[_index]));
+	};
+	printf("├");
+	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
+		printf("─");
+	} printf("┤\n");
+	set_cursor();
+	printf("\n└");
+	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
+			printf("─");
+		} printf("┘");
+	reset_cursor();
     while(1) {
-        printf("Introduza a sua opção: ");
+        printf("│ Introduza a sua opção: ");
+        for (uint8_t i = 0; i < CABECALHO_LEN - 26; ++i) printf(" ");
+        printf("│");
+		reset_cursor();
+		printf("\033[25C");
     	read_n_chars(3, buffer);
     	_option = str_to_int64_t(buffer);
     	if((_option<=(menu_size-last_zero)) && ((1-last_zero) <= _option)) break;
-    	printf("Opção inválida!!\n");
+		reset_cursor();
+		printf("\n├\033[%uC┤", CABECALHO_LEN-2);
+    	printf("\n│ \033[31mInvalid Option!! Please enter a valid option.\033[m");
+    	printf("\033[%uC│\n└", CABECALHO_LEN - 48);
+		for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
+			printf("─");
+		} printf("┘");
+    	reset_cursor();
     }
     return _option;
 };

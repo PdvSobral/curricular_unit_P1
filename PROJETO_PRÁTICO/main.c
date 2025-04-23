@@ -8,16 +8,16 @@ The pdf is present in the same repository as this program.
 */
 #define __main__	// because of it is the first, the other will not compile if not this line
 
-#include <unistd.h>	// sleep
-#include <time.h>	// tm, localtime
-#include <ctype.h>	// isdigit
+#include <unistd.h>		// sleep
+#include <time.h>		// tm, localtimeb
+#include <ctype.h> 		// isdigit
 
 #ifndef psystem
 	#include <stdio.h>		// printf, scanf
 	#include <stdlib.h>		// malloc, alloc (sem ela tmb tive algumas instabilidades com o uso de unsigneds)
 	#include <stdint.h>		// uint8_t
 	#include <string.h>		// strcmp, strlen
-	#pragma GCC warning "Loaded standard modules."
+	#pragma GCC warning "Loaded standard modules. Please use strlen2 instead of strlen."
 #else
 	#include "good_practices.c"
 	// Basicly imports the four modules above
@@ -32,8 +32,8 @@ The pdf is present in the same repository as this program.
 const uint8_t len_main_menu = 4;  // MENU PRINCIPAL
 const char main_menu[][CABECALHO_LEN] = {
 	"Gestão de Alunos",
-	"Gestão de Instrutores",
-	"Gestão de Aulas",
+	"Gestão de Instrutores ",
+	"Gestão de Aulas ",
 	"Sair"
 };
 const uint8_t len_alumin_mngmt_menu = 11;  // MENU DE GESTÃO DE ALUNOS
@@ -106,7 +106,7 @@ int8_t checkNif(char *str){
 		int8_t -3 -> O numero representado na string passada não é válido pelo algoritmo de verificação
 	*/
     if (strIsNum(str) == -1) return -2;
-    if (strlen(str) != 9) return -1;
+    if (strlen2(str) != 9) return -1;
     // O máximo que o buffer pode receber é 396, caso o número passado seja 99999999x, e nunca será negativo
     uint16_t buffer = 0;
     for (uint8_t i = 0; i < 8; i++) buffer += (str[i] - 0x30) * (9 - i);
@@ -149,14 +149,14 @@ int8_t checkPostalCode(char* str){
 		int8_t -1 -> A string passada não é válida
 		int8_t -2 -> A string passada não contém o tamanho certo (8: formatada, 7: não formatada)
 	*/
-	if (strlen(str) == 8) {
+	if (strlen2(str) == 8) {
 		for (uint8_t i = 0; i < 8; i++){
 			if (i==4 && str[i] != '-') return -1;
 			if (i!=4 && !isdigit(str[i])) return -1;
 		}
 		return 1;
 	}
-	if (strlen(str) == 7) return strIsNum(str);
+	if (strlen2(str) == 7) return strIsNum(str);
     return -2;
 }
 int8_t checkMonth(int64_t month, DATE *_temp){
@@ -267,7 +267,7 @@ int8_t read_address_tabed(ADDRESS *_temp, char *buffer){
 	while(1){
 		printf("\tRua (max. %d caracteres): ", LEN_STREET);
 		read_n_chars(LEN_STREET+1, buffer);
-		if(strlen(buffer)<=LEN_STREET) break;
+		if(strlen2(buffer)<=LEN_STREET) break;
 		printf("Comprimento excedido.\n");
 		printf("Deseja reintroduzir o valor (1) ou voltar ao menu (qualquer outro valor)? -> ");
 		read_n_chars(2, buffer);
@@ -313,7 +313,7 @@ int8_t read_address_tabed(ADDRESS *_temp, char *buffer){
 	while(1){
 		printf("\tLocalidade (max. %d caracteres): ", LEN_LOCATTION);
 		read_n_chars(LEN_LOCATTION+1, buffer);
-		if(strlen(buffer)>LEN_LOCATTION){
+		if(strlen2(buffer)>LEN_LOCATTION){
 			printf("Comprimento excedido.\n");
 			printf("Deseja reintroduzir o valor (1) ou voltar ao menu (qualquer outro valor)? -> ");
 			read_n_chars(2, buffer);
@@ -580,7 +580,7 @@ void search_name_instructor(SELF *self){
 	read_n_chars(LEN_NAME, name_instructor);
     uint8_t found = 0;
     for (uint8_t index = 0; index < self->instructors_array_insert_index; index++){
-        if (strncasecmp(name_instructor, self->instructors_array[index].name, strlen(name_instructor)) == 0){
+        if (strncasecmp(name_instructor, self->instructors_array[index].name, strlen2(name_instructor)) == 0){
         	if(found==0) printf("Instrutores encontrados incluindo esse nome:\n");
             printf("\t-> %s\n", self->instructors_array[index].name);
             found = 1;
@@ -611,8 +611,7 @@ void change_instructor_data(SELF *self){
 			char buffer[30];
 			int64_t int64_t_buffer;
 			int64_t uint16_t_buffer;
-			cabecalho("DADO A ALTERAR", CABECALHO_LEN);
-			choice = menu(change_data_instructor_submenu, len_change_data_instructor_submenu, 1);
+			choice = menu("DADO A ALTERAR", CABECALHO_LEN, change_data_instructor_submenu, len_change_data_instructor_submenu, 1);
 			if (choice == 0) return;
 			INSTRUCTOR _temp = self->instructors_array[index];
 			switch (choice){
@@ -721,9 +720,8 @@ void change_instructor_state(SELF *self){
     read_n_chars(LEN_NAME, name_instructor);
     for (uint8_t index = 0; index < self->instructors_array_insert_index; index++){
         if (strcmp(name_instructor, self->instructors_array[index].name) == 0) {
-			cabecalho("NOVO ESTADO", CABECALHO_LEN);
 			char _menu[2][CABECALHO_LEN] = {"Ativo", "Inativo"};
-			uint8_t choice = menu(_menu, 2, 1);
+			uint8_t choice = menu("NOVO ESTADO", CABECALHO_LEN, _menu, 2, 1);
 			if (choice==self->instructors_array[index].active_state) {
 				printf("O instrutor já se encontra com esse estado selecionado.\nEstado Inalterato.\n");
 				return;
@@ -1016,7 +1014,7 @@ void add_alumni(SELF *self){
 		while(1){
 			printf("Nº Carta de Condução (max. %d caracteres): ", LEN_DRIVING_LICENSE);
 			read_n_chars(LEN_DRIVING_LICENSE+1, buffer);
-			if(strlen(buffer) > LEN_DRIVING_LICENSE){
+			if(strlen2(buffer) > LEN_DRIVING_LICENSE){
 				printf("Nº Carta de Condução inválido.\n");
 				printf("Deseja reintroduzir o valor (1) ou voltar ao menu (qualquer outro valor)? -> ");
 				read_n_chars(2, buffer);
@@ -1076,7 +1074,7 @@ void search_name_alumni(SELF *self){
 	read_n_chars(LEN_NAME, name_alumni);
     uint8_t found = 0;
     for (uint8_t index = 0; index < self->alumni_array_insert_index; index++){
-        if (strncasecmp(name_alumni, self->alumni_array[index].name, strlen(name_alumni)) == 0){
+        if (strncasecmp(name_alumni, self->alumni_array[index].name, strlen2(name_alumni)) == 0){
         	if(found==0) {
         		printf("Alunos encontrados incluindo esse nome:\n");
         		printf("\t   (Nº) NOME\n");
@@ -1133,8 +1131,7 @@ void change_alumni_data(SELF *self){
 			uint8_t choice;
 			char buffer[30];
 			int64_t int64_t_buffer;
-			cabecalho("DADO A ALTERAR", CABECALHO_LEN);
-			choice = menu(change_data_alumni_submenu, len_change_data_alumni_submenu, 1);
+			choice = menu("DADO A ALTERAR", CABECALHO_LEN, change_data_alumni_submenu, len_change_data_alumni_submenu, 1);
 			if (choice == 0) return;
 			ALUMNI _temp = self->alumni_array[index];
 			switch (choice){
@@ -1239,7 +1236,7 @@ void change_alumni_data(SELF *self){
 						while(1){
 							printf("Nº Carta de Condução (max. %d caracteres): ", LEN_DRIVING_LICENSE);
 							read_n_chars(LEN_DRIVING_LICENSE+1, buffer);
-							if(strlen(buffer)>LEN_DRIVING_LICENSE){
+							if(strlen2(buffer)>LEN_DRIVING_LICENSE){
 								printf("Nº Carta de Condução inválido.\n");
 								printf("Deseja reintroduzir o valor (1) ou voltar ao menu (qualquer outro valor)? -> ");
 								read_n_chars(2, buffer);
@@ -1293,9 +1290,8 @@ void change_alumni_state(SELF *self){
 	read_n_chars(LEN_NAME, name_alumni);
     for (uint8_t index = 0; index < self->alumni_array_insert_index; index++) {
         if (strcmp(name_alumni, self->alumni_array[index].name) == 0) {
-        	cabecalho("NOVO ESTADO", CABECALHO_LEN);
 			char _menu[2][CABECALHO_LEN] = {"Ativo", "Inativo"};
-			uint8_t choice = menu(_menu, 2, 1);
+			uint8_t choice = menu("NOVO ESTADO", CABECALHO_LEN, _menu, 2, 1);
 			if (choice==self->alumni_array[index].active_state) {
 				printf("O aluno já se encontra com esse estado selecionado.\nEstado Inalterato.\n");
 				return;
@@ -1434,20 +1430,20 @@ void print_alumni_age(SELF *self){
 	};
 	char age_in_string[4];
 	my_itoa(age_target, age_in_string, 10);
-	strcpy(_my_menu[0]+strlen(_my_menu[0]), age_in_string);
-	strcpy(_my_menu[1]+strlen(_my_menu[1]), age_in_string);
-	strcpy(_my_menu[0]+strlen(_my_menu[0]), " anos");
-	strcpy(_my_menu[1]+strlen(_my_menu[1]), " anos");
+	strcpy(_my_menu[0]+strlen2(_my_menu[0]), age_in_string);
+	strcpy(_my_menu[1]+strlen2(_my_menu[1]), age_in_string);
+	strcpy(_my_menu[0]+strlen2(_my_menu[0]), " anos");
+	strcpy(_my_menu[1]+strlen2(_my_menu[1]), " anos");
 	uint8_t escolha_menu;
-	escolha_menu = menu(_my_menu, 2, 0);
+	escolha_menu = menu("FILTRO", CABECALHO_LEN, _my_menu, 2, 0);
 	char cabecalho_msg[CABECALHO_LEN];
 	switch(escolha_menu){
 		case 1: strcpy(cabecalho_msg, "ALUNOS SUPERIORES OU IGUAIS A "); break;
 		case 2: strcpy(cabecalho_msg, "ALUNOS INFERIORES OU IGUAIS A "); break;
 		default: printf("Função ainda não implementada!");
 	}
-	strcpy(cabecalho_msg+strlen(cabecalho_msg), age_in_string);
-	strcpy(cabecalho_msg+strlen(cabecalho_msg), " ANOS");
+	strcpy(cabecalho_msg+strlen2(cabecalho_msg), age_in_string);
+	strcpy(cabecalho_msg+strlen2(cabecalho_msg), " ANOS");
 	cabecalho(cabecalho_msg, CABECALHO_LEN);
 
 	DATE current_date = {1, 1, 0000};
@@ -1663,9 +1659,9 @@ void alumin_mngmt(SELF *self){
 	uint8_t _escolha_menu;
 	while (1){
 		clear_screen();
-		cabecalho("MENU GESTÃO DE ALUNOS", CABECALHO_LEN);
-		_escolha_menu = menu(alumin_mngmt_menu, len_alumin_mngmt_menu, 1);
+		_escolha_menu = menu("MENU GESTÃO DE ALUNOS ", CABECALHO_LEN, alumin_mngmt_menu, len_alumin_mngmt_menu, 1);
 		if(_escolha_menu==0) break;
+		clear_screen();
 		switch(_escolha_menu){
 			case 1: add_alumni(self); break;
 			case 2: search_name_alumni(self); break;
@@ -1694,8 +1690,7 @@ void instructor_mngmt(SELF *self){
 	uint8_t _escolha_menu;
 	while (1){
 		clear_screen();
-		cabecalho("MENU GESTÃO DE INSTRUTORES", CABECALHO_LEN);
-		_escolha_menu = menu(instructor_mngmt_menu, len_instructor_mngmt_menu, 1);
+		_escolha_menu = menu("MENU GESTÃO DE INSTRUTORES", CABECALHO_LEN, instructor_mngmt_menu, len_instructor_mngmt_menu, 1);
 		if(_escolha_menu==0) break;
 		switch(_escolha_menu){
 			case 1: add_instructor(self); break;
@@ -1722,8 +1717,7 @@ void class_mngmt(SELF *self){
 	uint8_t _escolha_menu;
 	while (1){
 		clear_screen();
-		cabecalho("MENU GESTÃO DE AULAS", CABECALHO_LEN);
-		_escolha_menu = menu(classes_menu, len_classes_menu, 1);
+		_escolha_menu = menu("MENU GESTÃO DE AULAS", CABECALHO_LEN, classes_menu, len_classes_menu, 1);
 		if(_escolha_menu==0) break;
 		switch(_escolha_menu){
 			case 1: add_class(self); break;
@@ -1773,8 +1767,7 @@ int32_t main(void){
 	if(DEBUG==1) teste(&self);
 	while (1){
 		clear_screen();
-		cabecalho("MENU PRINCIPAL", CABECALHO_LEN);
-		escolha_menu = menu(main_menu, len_main_menu, 1);
+		escolha_menu = menu("MENU PRINCIPAL", CABECALHO_LEN, main_menu, len_main_menu, 1);
 		if(escolha_menu==0) break;
 		switch(escolha_menu){
 			case 1: alumin_mngmt(&self); break;
