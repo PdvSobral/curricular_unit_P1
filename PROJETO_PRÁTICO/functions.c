@@ -15,7 +15,7 @@ The pdf is present in the same repository as this program.
 #endif
 
 // Especificações do cliente
-#define CABECALHO_LEN 70
+#define CABECALHO_LEN 50
 #define MAX_ALUMNI 30
 #define MAX_INSTRUCTORS 10
 #define MAX_CLASSES 100
@@ -124,6 +124,7 @@ void set_cursor(){
 		Save the cursor position to return to later
 	*/
 	printf("\033[s");
+	fflush(stdout);
 	return;
 }
 void reset_cursor(){
@@ -131,6 +132,7 @@ void reset_cursor(){
 		Restore the cursor position to the previous saved state
 	*/
 	printf("\033[u");
+	fflush(stdout);
 	return;
 }
 void flush_stdin(void){
@@ -306,7 +308,7 @@ void cabecalho(const char msg[], uint8_t len_cabecalho){
 void reset_line(){
 	set_cursor();
 	printf("\033[Am\033[0G");  // up one line and beggining
-	printf("├\033[%uC┤", CABECALHO_LEN-2);  // replace the line
+	printf("├\033[%uC┤\n", CABECALHO_LEN-2);  // replace the line and return to where it was
 	reset_cursor();
 	return;
 };
@@ -342,24 +344,35 @@ int64_t menu(const char tittle[], uint8_t len_cabecalho, const char menu_options
 	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
 			printf("─");
 		} printf("┘");
+	/* Was not working
 	reset_cursor();
+	*/
+	printf("\033[1A\033[%dD", CABECALHO_LEN);
     while(1) {
         printf("│ Introduza a sua opção: ");
         for (uint8_t i = 0; i < CABECALHO_LEN - 26; ++i) printf(" ");
         printf("│");
+		/* Was not working
 		reset_cursor();
-		printf("\033[25C");
+		*/
+		printf("\033[%dD\033[25C", CABECALHO_LEN);
     	read_n_chars(3, buffer);
     	_option = str_to_int64_t(buffer);
     	if((_option<=(menu_size-last_zero)) && ((1-last_zero) <= _option)) break;
+		/* Was not working
 		reset_cursor();
-		printf("\n├\033[%uC┤", CABECALHO_LEN-2);
+		*/
+		printf("├\033[%uC┤", CABECALHO_LEN-2);
     	printf("\n│ \033[31mInvalid Option!! Please enter a valid option.\033[m");
     	printf("\033[%uC│\n└", CABECALHO_LEN - 48);
 		for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
 			printf("─");
 		} printf("┘");
-    	reset_cursor();
+		/* Was not working
+		reset_cursor();
+		*/
+		printf("\033[3A\033[%dD", CABECALHO_LEN);
     }
+    printf("\n");
     return _option;
 };
