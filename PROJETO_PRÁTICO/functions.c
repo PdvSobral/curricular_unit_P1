@@ -23,6 +23,10 @@ The pdf is present in the same repository as this program.
 #define DEBUG 1
 #define CLEAR 1
 
+
+#define AGGRESSIVE
+
+
 // Especificações do programador
 #define LEN_NAME 70
 #define LEN_EMAIL 30
@@ -112,6 +116,26 @@ uint32_t strlen2(const char *str) {
     return count;
 }
 #endif
+
+
+struct termios original_tio;
+void disable_ctrl_d() {
+    struct termios new_tio;
+    tcgetattr(STDIN_FILENO, &original_tio);
+    new_tio = original_tio;
+    new_tio.c_cc[VEOF] = 0;
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_tio);
+    return;
+}
+void enable_ctrl_d() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &original_tio);
+    return;
+}
+void handle_sigint(int32_t sig) {
+    printf("\n\n\nCaught signal %d. Restoring terminal settings and exiting...\n", sig);
+    enable_ctrl_d();
+    exit(1);
+}
 
 void clear_screen(){
 	/*
@@ -246,6 +270,29 @@ int64_t str_to_int64_t(char *pointer_to_str){
 	}
 	return _buffer;
 }
+int64_t str_to_int64_t_flag(char *pointer_to_str, uint8_t *is_numeric){
+	/*
+	Função que converte um inteiro representado como str para um inteiro
+	Argumentos:
+		char *pointer_to_str -> Início da str para converter para inteiro
+		*uint8_t is_numeric  -> A variável para onde aponta será colocada com 1 se sim, 0 se não
+	Retorno:
+		int64_t -> inteiro contido na str
+	*/
+	int64_t _buffer = -1;
+	char char_to_evaluate;
+	while(1){
+		char_to_evaluate = *(pointer_to_str);
+		if(char_to_evaluate == 0x00) {*is_numeric=1; break;};
+		if(char_to_evaluate < 0x30) {*is_numeric=0; break;};
+		if(char_to_evaluate > 0x3A) {*is_numeric=0; break;};
+		if(_buffer==-1) _buffer=0;
+		_buffer*=10;
+		_buffer+=(char_to_evaluate - 0x30);
+		pointer_to_str++;
+	}
+	return _buffer;
+}
 int8_t is_leap(int64_t year){
 	/*
 	Função para confirmar se um ano é bisexto.
@@ -323,56 +370,51 @@ int64_t menu(const char tittle[], uint8_t len_cabecalho, const char menu_options
 	Retorno:
 		int64_t -> Escolha do utilizador
 	*/
-	cabecalho(tittle, len_cabecalho);
-	reset_line();
-	char buffer[5];
+	uint8_t wrong=0;
 	int64_t _option;
-	for(uint8_t _index=0; _index<menu_size; _index++) {
-		if(_index+last_zero == menu_size){
-			printf("│  0 - %s", menu_options[_index]);
-		} else {
-			printf("│ %2d - %s", _index + 1,  menu_options[_index]);
-		} 
-		printf("\033[%uC│\n", CABECALHO_LEN - 8 - (uint8_t) strlen2(menu_options[_index]));
-	};
-	printf("├");
-	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
-		printf("─");
-	} printf("┤\n");
-	set_cursor();
-	printf("\n└");
-	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
-			printf("─");
-		} printf("┘");
-	/* Was not working
-	reset_cursor();
-	*/
-	printf("\033[1A\033[%dD", CABECALHO_LEN);
-    while(1) {
-        printf("│ Introduza a sua opção: ");
-        for (uint8_t i = 0; i < CABECALHO_LEN - 26; ++i) printf(" ");
-        printf("│");
-		/* Was not working
-		reset_cursor();
-		*/
-		printf("\033[%dD\033[25C", CABECALHO_LEN);
-    	read_n_chars(3, buffer);
-    	_option = str_to_int64_t(buffer);
-    	if((_option<=(menu_size-last_zero)) && ((1-last_zero) <= _option)) break;
-		/* Was not working
-		reset_cursor();
-		*/
-		printf("├\033[%uC┤", CABECALHO_LEN-2);
-    	printf("\n│ \033[31mInvalid Option!! Please enter a valid option.\033[m");
-    	printf("\033[%uC│\n└", CABECALHO_LEN - 48);
+	uint8_t numeric_flag = 0;
+	while(1){
+		cabecalho(tittle, len_cabecalho);
+		reset_line();
+		char buffer[5];
+		for(uint8_t _index=0; _index<menu_size; _index++) {
+			if(_index+last_zero == menu_size){
+				printf("│  0 - %s", menu_options[_index]);
+			} else {
+				printf("│ %2d - %s", _index + 1,  menu_options[_index]);
+			}
+			printf("\033[%uC│\n", CABECALHO_LEN - 8 - (uint8_t) strlen2(menu_options[_index]));
+		};
+		printf("├");
 		for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
 			printf("─");
-		} printf("┘");
-		/* Was not working
-		reset_cursor();
-		*/
-		printf("\033[3A\033[%dD", CABECALHO_LEN);
-    }
-    printf("\n");
-    return _option;
+		} printf("┤\n");
+		printf("\n└");
+		for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
+				printf("─");
+			} printf("┘");
+		printf("\033[1A\033[%dD", CABECALHO_LEN);
+		printf("│ Introduza a sua opção: ");
+		for (uint8_t i = 0; i < CABECALHO_LEN - 26; ++i) printf(" ");
+		printf("│");
+
+		if(wrong==1){
+			printf("\n├\033[%uC┤", CABECALHO_LEN-2);
+			printf("\n│ \033[31mInvalid Option!! Please enter a valid option.\033[m");
+			printf("\033[%uC│\n└", CABECALHO_LEN - 48);
+			for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
+				printf("─");
+			} printf("┘");
+			printf("\033[3A\033[%dD\033[25C", CABECALHO_LEN);
+		} else {
+			printf("\033[%dD\033[25C", CABECALHO_LEN);
+		}
+		read_n_chars(3, buffer);
+		_option = str_to_int64_t_flag(buffer, &numeric_flag);
+		if((_option<=(menu_size-last_zero)) && ((1-last_zero) <= _option) && numeric_flag) break;
+		wrong = 1;
+		clear_screen();
+	}
+	printf("\n");
+	return _option;
 };

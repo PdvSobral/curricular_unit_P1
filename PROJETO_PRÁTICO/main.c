@@ -11,6 +11,8 @@ The pdf is present in the same repository as this program.
 #include <unistd.h>		// sleep
 #include <time.h>		// tm, localtimeb
 #include <ctype.h> 		// isdigit
+#include <termios.h>    // -> Disabl_ctrl_d (IN) functions.c
+#include <signal.h>		// -> To remap CTRL+C
 
 #ifndef psystem
 	#include <stdio.h>		// printf, scanf
@@ -1758,6 +1760,10 @@ int32_t main(void){
 	Retorno:
 		Nenhum
 	*/
+	#ifdef AGGRESSIVE
+		signal(SIGINT, handle_sigint);
+		disable_ctrl_d();
+	#endif
     fflush(stdin);
 	uint8_t escolha_menu;
 	SELF self;
@@ -1777,5 +1783,8 @@ int32_t main(void){
 		}
 	}
 	printf("Saindo...\n");
+	#ifdef AGGRESSIVE
+		enable_ctrl_d();
+	#endif
 	return 0;
 };
