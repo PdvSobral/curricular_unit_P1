@@ -29,6 +29,7 @@ For now, it's just an adaptation in progress of another program.
 #endif
 
 #include "functions.c"
+#include "linked_lists.c"
 
 
 // Defenition of the menu arrays
