@@ -1,10 +1,11 @@
 /* Encoding: UTF-8
-@Authors: Pedro Sobral (33641), <Name> (<Numero>)
-@Date: 23/05/2025
+@Authors: Pedro Sobral (33641), Alexandre Domingos (27641)
+@Date: 29/05/2025
 @Links: Project github repository -> https://github.com/PdvSobral/curricular_unit_P1
 
 This program was developed as an answer to a problem described in a pdf file provided to us.
-The pdf is present in the same repository as this program.
+The pdf is present in the same repository as this program, just not now.
+For now, it's just an adaptation in progress of another program.
 */
 #define __main__	// because of it is the first, the other will not compile if not this line
 
