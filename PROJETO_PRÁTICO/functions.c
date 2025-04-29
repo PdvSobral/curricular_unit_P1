@@ -1,6 +1,6 @@
 /* Encoding: UTF-8
-@Authors: Pedro Sobral (33641), <Name> (<Numero>)
-@Date: 23/05/2025
+@Authors: Pedro Sobral (33641), Alexandre Domingos (27641)
+@Date: 29/05/2025
 @Links: Project github repository -> https://github.com/PdvSobral/curricular_unit_P1
 
 This file contains the functions developed as an answer to a problem described in a pdf file provided to us.
@@ -116,7 +116,6 @@ uint32_t strlen2(const char *str) {
     return count;
 }
 #endif
-
 
 struct termios original_tio;
 void disable_ctrl_d() {
