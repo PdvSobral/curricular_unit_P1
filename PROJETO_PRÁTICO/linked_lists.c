@@ -119,8 +119,8 @@ void traverse_list(LinkedList* list, void (*func)(void*)) {
 	*/
     NODE *current_node = list->head;
     while (current_node != NULL) {
-        func(current_node);				// Apply the function to the node
-        current = current_node->next;
+        func(current_node);					// Apply the function to the node
+        current_node = current_node->next;
     }
 }
 
@@ -242,14 +242,14 @@ int8_t find_node(LinkedList* list, uint8_t (*check)(void*)) {
     NODE* current = list->head;
     int8_t index = 0;
     while (current != NULL) {
-        if (compare(current) == 1) return index;
+        if (check(current) == 1) return index;
         current = current->next;
         index++;
     }
     return -1;
 }
 
-int8_t find_node(LinkedList* list, uint8_t (*check)(void*), uint8_t from_index) {
+int8_t find_node_from(LinkedList* list, uint8_t (*check)(void*), uint8_t from_index) {
 	/*
 	Function to find the first node that meets a certain criteria, but only from a certain address.
 	Arguments:
@@ -264,7 +264,7 @@ int8_t find_node(LinkedList* list, uint8_t (*check)(void*), uint8_t from_index) 
     NODE* current = list->head;
     int8_t index = 0;
     while (current != NULL) {
-        if ((compare(current) == 1)&&(index>=from_index)) return index;
+        if ((check(current) == 1)&&(index>=from_index)) return index;
         current = current->next;
         index++;
     }
@@ -284,7 +284,7 @@ uint8_t count_occurences(LinkedList* list, uint8_t (*check)(void*)) {
     NODE* current = list->head;
     int8_t count = 0;
     while (current != NULL) {
-        if (compare(current) == 1) count++;
+        if (check(current) == 1) count++;
         current = current->next;
     }
     return count;
@@ -377,7 +377,7 @@ LinkedList* concatenate(LinkedList* less, LinkedList* equal, LinkedList* greater
     return result;
 }
 
-void three_way_quick_sort(LinkedList* list, int (*compare)(void*, void*)) {
+void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
     if (list->head == NULL || list->head->next == NULL) return;
 
     LinkedList* less = create_linked_list();
