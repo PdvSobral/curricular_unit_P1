@@ -314,9 +314,6 @@ void sort_list(LinkedList* list, uint8_t (*compare)(void*, void*)) {
     } while (swapped);
 }
 
-
-// TODO: CHECK THE LAST FUNCTION
-
 void three_way_partition(LinkedList* list, LinkedList* less, LinkedList* equal, LinkedList* greater, int32_t (*compare)(void*, void*)) {
     /*
     Used in three-way quick sort. If compare is less than 0, left. If 0, middle. Else right.
