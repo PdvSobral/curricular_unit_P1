@@ -159,3 +159,242 @@ void remove_nodes(LinkedList* list, uint8_t (*contition)(void*)) {
     }
     return;
 }
+
+uint8_t insert_at_index(LinkedList* list, void* data, size_t index) {
+	/*
+	Function to insert a new node at a certain index.
+	Arguments:
+		LinkedList* list	-> Linked list to add the nodes to.
+		void* data			-> Data for the node
+		size_t index		-> Index to insert on
+	Return:
+		uint8_t 			-> Status: 0 all right, 1: index out of bounds, 2: memory allocation for node failed
+	*/
+    if (index > list->size) return 1;
+    NODE* new_node = create_node(data);
+    if (new_node == NULL) return 2;
+    if (index == 0) {
+        new_node->next = list->head;
+        list->head = new_node;
+    } else {
+        NODE* current = list->head;
+        for (size_t i = 0; i < index - 1; i++) current = current->next;
+        new_node->next = current->next;
+        current->next = new_node;
+    }
+    list->size++;
+    return 0;
+}
+
+NODE* get_node_at_index(LinkedList* list, size_t index) {
+	/*
+	Function to insert a new node at a certain index.
+	Arguments:
+		LinkedList* list	-> Linked list to get the node from.
+		size_t index		-> Index to get node from
+	Return:
+		NODE* 				-> Address for the node, NULL id index does not exist.
+	*/
+    if (index >= list->size) return NULL; // Index out of bounds
+    NODE* current = list->head;
+    for (size_t i = 0; i < index; i++) current = current->next;
+    return current;
+}
+
+uint8_t remove_node_at_index(LinkedList* list, size_t index) {
+	/*
+	Function to insert a new node at a certain index.
+	Arguments:
+		LinkedList* list	-> Linked list to delete the node from.
+		size_t index		-> Index to delete node on
+	Return:
+		uint8_t 				-> Exit status. 0: All right, 1: Index out of bounds.
+	*/
+    if (index >= list->size) return 1;
+    NODE* current = list->head;
+    if (index == 0) {
+        list->head = current->next;
+        free(current);
+    } else {
+        NODE* previous = NULL;
+        for (size_t i = 0; i < index; i++) {
+            previous = current;
+            current = current->next;
+        }
+        previous->next = current->next;
+        free(current);
+    }
+    list->size--;
+    return 0;
+}
+
+int8_t find_node(LinkedList* list, uint8_t (*check)(void*)) {
+	/*
+	Function to find the first node that meets a certain criteria.
+	Arguments:
+		LinkedList* list			-> Linked list to search on.
+		uint8_t (*contition)(void*)	-> Function to be used to check if the node is the wanted one.
+									   If the return is 1, then the index for the node in cause is returned.
+	Return:
+		int8_t						-> If positive, index for the node found with the lowest index.
+									   Else, no index found
+	*/
+    NODE* current = list->head;
+    int8_t index = 0;
+    while (current != NULL) {
+        if (compare(current) == 1) return index;
+        current = current->next;
+        index++;
+    }
+    return -1;
+}
+
+int8_t find_node(LinkedList* list, uint8_t (*check)(void*), uint8_t from_index) {
+	/*
+	Function to find the first node that meets a certain criteria, but only from a certain address.
+	Arguments:
+		LinkedList* list			-> Linked list to search on.
+		uint8_t (*contition)(void*)	-> Function to be used to check if the node is the wanted one.
+									   If the return is 1, then the index for the node in cause is returned.
+		uint8_t from_index			-> Only search from that index onwards, index included
+	Return:
+		int8_t						-> If positive, index for the node found with the lowest index.
+									   Else, no index found
+	*/
+    NODE* current = list->head;
+    int8_t index = 0;
+    while (current != NULL) {
+        if ((compare(current) == 1)&&(index>=from_index)) return index;
+        current = current->next;
+        index++;
+    }
+    return -1;
+}
+
+uint8_t count_occurences(LinkedList* list, uint8_t (*check)(void*)) {
+	/*
+	Function to count the numbers of nodes that meet a certain criteria.
+	Arguments:
+		LinkedList* list			-> Linked list to search on.
+		uint8_t (*contition)(void*)	-> Function to be used to check if the node is the wanted one.
+									   If the return is 1, then the node is considered found.
+	Return:
+		uint8_t						-> Number of ocurrences found in the list
+	*/
+    NODE* current = list->head;
+    int8_t count = 0;
+    while (current != NULL) {
+        if (compare(current) == 1) count++;
+        current = current->next;
+    }
+    return count;
+}
+
+void sort_list(LinkedList* list, uint8_t (*compare)(void*, void*)) {
+    /*
+    Sorts a LinkedList using an optimized bubble sort.
+    If the return of compare is 1, then the first argument is passed to the right
+    */
+    if (list->head == NULL || list->head->next == NULL) return;
+    uint8_t swapped;
+    NODE* first_correct_element = NULL;
+    do {
+        swapped = 0;
+        NODE* current = list->head;
+        while (current->next != first_correct_element) {
+            if (compare(current, current->next) == 1) {
+                void* temp = current->data;
+                current->data = current->next->data;
+                current->next->data = temp;
+                swapped = 1;
+            }
+            current = current->next;
+        }
+        first_correct_element = current; // Update the end to the last sorted node
+    } while (swapped);
+}
+
+
+// TODO: CHECK THE LAST FUNCTION
+
+// Function to partition the list into three parts
+void three_way_partition(NODE** head, NODE** less, NODE** equal, NODE** greater, int (*compare)(void*, void*)) {
+    if (*head == NULL) return;
+
+    NODE* current = *head;
+    void* pivot = current->data;
+
+    while (current != NULL) {
+        if (compare(current->data, pivot) < 0) {
+            // Add to less
+            NODE* next = current->next;
+            current->next = *less;
+            *less = current;
+            current = next;
+        } else if (compare(current->data, pivot) == 0) {
+            // Add to equal
+            NODE* next = current->next;
+            current->next = *equal;
+            *equal = current;
+            current = next;
+        } else {
+            // Add to greater
+            NODE* next = current->next;
+            current->next = *greater;
+            *greater = current;
+            current = next;
+        }
+    }
+}
+
+// Function to concatenate three lists
+NODE* concatenate(NODE* less, NODE* equal, NODE* greater) {
+    if (less == NULL) return equal ? (equal->next = greater, equal) : greater;
+    NODE* tail = less;
+    while (tail->next != NULL) {
+        tail = tail->next;
+    }
+    tail->next = equal;
+    if (equal) {
+        while (tail->next != NULL) {
+            tail = tail->next;
+        }
+    }
+    tail->next = greater;
+    return less;
+}
+
+// Three-way quicksort function
+void three_way_quick_sort(LinkedList* list, int (*compare)(void*, void*)) {
+    if (list->head == NULL || list->head->next == NULL) {
+        return; // List is empty or has one element
+    }
+
+    NODE* less = NULL;
+    NODE* equal = NULL;
+    NODE* greater = NULL;
+
+    // Partition the list
+    three_way_partition(&list->head, &less, &equal, &greater, compare);
+
+    // Recursively sort the left and right parts
+    LinkedList less_list = {less, 0};
+    LinkedList greater_list = {greater, 0};
+
+    three_way_quick_sort(&less_list, compare);
+    three_way_quick_sort(&greater_list, compare);
+
+    // Concatenate the sorted lists
+    list->head = concatenate(less_list.head, equal, greater_list.head);
+}
+
+
+
+
+
+
+
+
+
+
+
