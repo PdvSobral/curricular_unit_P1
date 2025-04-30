@@ -138,15 +138,15 @@ void remove_nodes(LinkedList* list, uint8_t (*contition)(void*)) {
     NODE *current = list->head;
     NODE *previous = NULL;
     while (current != NULL) {
-        if (contition(current->data) == 1) { // Compare data using the provided function
+    	// Compare data using the provided function
+        if (contition(current->data) == 1) {
         	// It's the first node, so simply reassign the head node
             if (previous == NULL) {
             	list->head = current->next;
             	free(current);
             	current = list->head;
-            }
-            // If not head, skip the current node in the list
-            else {
+            } else {
+            	// If not head, skip the current node in the list
             	previous->next = current->next;
             	free(current);
             	current = previous->next;
