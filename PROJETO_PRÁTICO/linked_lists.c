@@ -317,84 +317,90 @@ void sort_list(LinkedList* list, uint8_t (*compare)(void*, void*)) {
 
 // TODO: CHECK THE LAST FUNCTION
 
-// Function to partition the list into three parts
-void three_way_partition(NODE** head, NODE** less, NODE** equal, NODE** greater, int (*compare)(void*, void*)) {
-    if (*head == NULL) return;
+void three_way_partition(LinkedList* list, LinkedList* less, LinkedList* equal, LinkedList* greater, int32_t (*compare)(void*, void*)) {
+    /*
+    Used in three-way quick sort. If compare is less than 0, left. If 0, middle. Else right.
+    */
+    if (list->head == NULL) return;
 
-    NODE* current = *head;
+    NODE* current = list->head;
     void* pivot = current->data;
 
     while (current != NULL) {
         if (compare(current->data, pivot) < 0) {
             // Add to less
             NODE* next = current->next;
-            current->next = *less;
-            *less = current;
+            add_node(less, current->data); // Use add_node to add to the less list
             current = next;
         } else if (compare(current->data, pivot) == 0) {
             // Add to equal
             NODE* next = current->next;
-            current->next = *equal;
-            *equal = current;
+            add_node(equal, current->data); // Use add_node to add to the equal list
             current = next;
         } else {
             // Add to greater
             NODE* next = current->next;
-            current->next = *greater;
-            *greater = current;
+            add_node(greater, current->data); // Use add_node to add to the greater list
             current = next;
         }
     }
 }
 
-// Function to concatenate three lists
-NODE* concatenate(NODE* less, NODE* equal, NODE* greater) {
-    if (less == NULL) return equal ? (equal->next = greater, equal) : greater;
-    NODE* tail = less;
-    while (tail->next != NULL) {
-        tail = tail->next;
+LinkedList* concatenate(LinkedList* less, LinkedList* equal, LinkedList* greater) {
+    /*
+    Concatenates three linked lists into a single linked list.
+    Arguments:
+        LinkedList* less      -> Pointer to the 'less' linked list.
+        LinkedList* equal     -> Pointer to the 'equal' linked list.
+        LinkedList* greater   -> Pointer to the 'greater' linked list.
+    Return:
+        LinkedList*          -> Pointer to the head of the concatenated linked list.
+                                If all input lists are NULL, it returns NULL.
+    */
+    LinkedList* result = create_linked_list();
+    if (result == NULL) return NULL;
+    NODE* current = less->head;
+    while (current != NULL) {
+        add_node(result, current->data);
+        current = current->next;
     }
-    tail->next = equal;
-    if (equal) {
-        while (tail->next != NULL) {
-            tail = tail->next;
-        }
+    current = equal->head;
+    while (current != NULL) {
+        add_node(result, current->data);
+        current = current->next;
     }
-    tail->next = greater;
-    return less;
+    current = greater->head;
+    while (current != NULL) {
+        add_node(result, current->data);
+        current = current->next;
+    }
+    return result;
 }
 
-// Three-way quicksort function
 void three_way_quick_sort(LinkedList* list, int (*compare)(void*, void*)) {
-    if (list->head == NULL || list->head->next == NULL) {
-        return; // List is empty or has one element
-    }
+    if (list->head == NULL || list->head->next == NULL) return;
 
-    NODE* less = NULL;
-    NODE* equal = NULL;
-    NODE* greater = NULL;
+    LinkedList* less = create_linked_list();
+    LinkedList* equal = create_linked_list();
+    LinkedList* greater = create_linked_list();
 
     // Partition the list
-    three_way_partition(&list->head, &less, &equal, &greater, compare);
+    three_way_partition(list, less, equal, greater, compare);
 
     // Recursively sort the left and right parts
-    LinkedList less_list = {less, 0};
-    LinkedList greater_list = {greater, 0};
-
-    three_way_quick_sort(&less_list, compare);
-    three_way_quick_sort(&greater_list, compare);
+    three_way_quick_sort(less, compare);
+    three_way_quick_sort(greater, compare);
 
     // Concatenate the sorted lists
-    list->head = concatenate(less_list.head, equal, greater_list.head);
+    LinkedList* sorted_list = concatenate(less, equal, greater);
+
+    // Update the original list
+    list->head = sorted_list->head;
+    list->size = less->size + equal->size + greater->size;
+
+    // Clean up temporary lists
+    delete_linked_list(less);
+    delete_linked_list(equal);
+    delete_linked_list(greater);
+    delete_linked_list(sorted_list);
 }
-
-
-
-
-
-
-
-
-
-
-
