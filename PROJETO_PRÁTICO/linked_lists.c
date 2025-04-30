@@ -76,9 +76,9 @@ NODE* add_node(LinkedList* list, void* data) {
 		Pointer to the newly created Node
 	*/
     NODE *new_node = create_node(data);
-    if (list->head == NULL) {
-        list->head = new_node;			// If the list is empty, set the new node as the head
-    } else {
+    if (new_node==NULL) return NULL;
+    if (list->head == NULL) list->head = new_node;  // If the list is empty, set the new node as the head
+    else {
         NODE *current = list->head;
         while (current->next != NULL) {
             current = current->next;	// Search for the end
