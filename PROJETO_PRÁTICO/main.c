@@ -31,6 +31,39 @@ For now, it's just an adaptation in progress of another program.
 #include "functions.c"
 #include "linked_lists.c"
 
+typedef struct _alumni{
+	uint8_t number;  // apenas está assim pelo máximo ser de 30 alunos
+	char name[LEN_NAME+1];
+	ADDRESS address;
+	char email[LEN_EMAIL+1];
+	DATE birth_date;
+	uint64_t number_citizen_card;
+	uint64_t nif;
+	DATE date_license_completed;
+	char number_driving_license[LEN_DRIVING_LICENSE+1];
+	uint8_t active_state;
+} ALUMNI;
+typedef struct _instructor{
+	uint64_t number_citizen_card;
+	char name[LEN_NAME+1];
+	char email[LEN_EMAIL+1];
+	uint32_t year_start;
+	uint8_t active_state;
+} INSTRUCTOR;
+typedef struct _class{
+	DATE class_date;
+	TIME class_time;
+	ALUMNI *alumni;
+	INSTRUCTOR *instructor;
+} CLASS;
+typedef struct _self{
+	INSTRUCTOR instructors_array[MAX_INSTRUCTORS];
+	uint8_t instructors_array_insert_index;
+	ALUMNI alumni_array[MAX_ALUMNI];
+	uint8_t alumni_array_insert_index;
+	CLASS classes_array[MAX_CLASSES];
+	uint8_t classes_array_insert_index;
+} SELF;
 
 // Defenition of the menu arrays
 const uint8_t len_main_menu = 4;  // MENU PRINCIPAL

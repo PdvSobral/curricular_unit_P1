@@ -7,24 +7,31 @@ This file contains the functions developed for a simple implementation of linked
 For now it does not have much, but the idea is to have simple and double linked lists support.
 */
 // Makes so that if "#define __main__" is not somewhere before this program is compiled an error ocurs, stopping compilation
+// para compilar diretamente, tenho de colocar "-z noexecstack" no gcc
 #ifndef __main__
-#pragma GCC error "This code is not meant to be compiled directly."
+	#pragma GCC warning "This code ('linked_lists.c') is not meant to be compiled directly. Be sure you know what you are doing."
+	#include <stdlib.h>		// malloc, alloc (sem ela tmb tive algumas instabilidades com o uso de unsigneds)
+	#include <stdint.h>		// uint8_t
+	#include <stdio.h>		// printf
+	#define __main__
+	#define __compile_lists__
 #else
-// Makes so that this file is only included once
-#pragma once
+	// Makes so that this file is only included once
+	#pragma once
 #endif
-
 
 
 // Typedef for a NODE in a LinkedList
 typedef struct _node {
     void* data;
     struct _node* next;
+    struct _node* previous;
 } NODE;
 
 // Typedef for a LinkedList
 typedef struct _linkedlist {
     NODE* head;
+    NODE* tail;
     size_t size;
 } LinkedList;
 
@@ -40,10 +47,9 @@ LinkedList* create_linked_list() {
 		If it returns NULL, the allocation failed.
 	*/
     LinkedList* list = (LinkedList*) malloc(sizeof(LinkedList));
-    if (list == NULL) {
-        return NULL;
-    }
+    if (list == NULL) return NULL;
     list->head = NULL;
+    list->tail = NULL;
     list->size = 0;
     return list;
 }
@@ -58,11 +64,10 @@ NODE* create_node(void *data) {
 		Pointer to the newly created node
 	*/
     NODE* new_node = (NODE *) malloc(sizeof(NODE));
-    if (new_node == NULL) {
-        return NULL;
-    }
+    if (new_node == NULL) return NULL;
     new_node->data = data;
     new_node->next = NULL;
+    new_node->previous = NULL;
     return new_node;
 }
 
@@ -75,15 +80,16 @@ NODE* add_node(LinkedList* list, void* data) {
 	Return:
 		Pointer to the newly created Node
 	*/
-    NODE *new_node = create_node(data);
-    if (new_node==NULL) return NULL;
-    if (list->head == NULL) list->head = new_node;  // If the list is empty, set the new node as the head
-    else {
-        NODE *current = list->head;
-        while (current->next != NULL) {
-            current = current->next;	// Search for the end
-        }
-        current->next = new_node;		// Add the new node at the end
+    NODE* new_node = create_node(data);
+    if (new_node == NULL) return NULL;
+
+    if (list->head == NULL) {
+        list->head = new_node;
+        list->tail = new_node;
+    } else {
+        list->tail->next = new_node;  	  // Append to the end
+        new_node->previous = list->tail;  // Previous of new node is the old tail
+        list->tail = new_node;  		  // Move the tail pointer to the new node
     }
     list->size++;
     return new_node;
@@ -97,8 +103,8 @@ void delete_linked_list(LinkedList* list) {
 	Return:
 		None
 	*/
-    NODE *current = list->head;
-    NODE *next_node;
+    NODE* current = list->head;
+    NODE* next_node;
     while (current != NULL) {
         next_node = current->next;
         free(current);
@@ -117,14 +123,14 @@ void traverse_list(LinkedList* list, void (*func)(void*)) {
 	Return:
 		None
 	*/
-    NODE *current_node = list->head;
+    NODE* current_node = list->head;
     while (current_node != NULL) {
-        func(current_node);					// Apply the function to the node
+        func(current_node->data);
         current_node = current_node->next;
     }
 }
 
-void remove_nodes(LinkedList* list, uint8_t (*contition)(void*)) {
+void remove_nodes(LinkedList* list, uint8_t (*condition)(void*)) {
 	/*
 	Function to remove every node that meets a certain criteria.
 	Arguments:
@@ -135,33 +141,41 @@ void remove_nodes(LinkedList* list, uint8_t (*contition)(void*)) {
 		None
 	*/
     if (list->head == NULL) return;
-    NODE *current = list->head;
-    NODE *previous = NULL;
+    NODE* current = list->head;
+    NODE* previous = NULL;
     while (current != NULL) {
     	// Compare data using the provided function
-        if (contition(current->data) == 1) {
-        	// It's the first node, so simply reassign the head node
+        if (condition(current->data) == 1) {
+            // It's the first node, so simply reassign the head node
             if (previous == NULL) {
-            	list->head = current->next;
-            	free(current);
-            	current = list->head;
+                list->head = current->next;
+                if (list->head != NULL) {
+                    list->head->previous = NULL;  // Set the previous of the new head to NULL
+                }
             } else {
-            	// If not head, skip the current node in the list
-            	previous->next = current->next;
-            	free(current);
-            	current = previous->next;
+                previous->next = current->next;
+                if (current->next != NULL) {
+                    current->next->previous = previous;  // Set the previous of the next node
+                } else {
+                    list->tail = previous;  // If it's the last node, update the tail
+                }
             }
-            list->size--;	// decrease size by one
+            free(current);
+            if (previous) {
+				current = previous->next; // Move to the next node
+			} else {
+				current = list->head; // Reset to the head of the list
+			}
+            list->size--;
         } else {
-			previous = current;
-			current = previous->next;
+            previous = current;
+            current = current->next;
         }
     }
-    return;
 }
 
 uint8_t insert_at_index(LinkedList* list, void* data, size_t index) {
-	/*
+    /*
 	Function to insert a new node at a certain index.
 	Arguments:
 		LinkedList* list	-> Linked list to add the nodes to.
@@ -175,30 +189,24 @@ uint8_t insert_at_index(LinkedList* list, void* data, size_t index) {
     if (new_node == NULL) return 2;
     if (index == 0) {
         new_node->next = list->head;
+        if (list->head != NULL) {
+            list->head->previous = new_node;
+        }
         list->head = new_node;
+        if (list->size == 0) {
+            list->tail = new_node;
+        }
     } else {
         NODE* current = list->head;
         for (size_t i = 0; i < index - 1; i++) current = current->next;
         new_node->next = current->next;
+        if (current->next != NULL) current->next->previous = new_node;
+        else list->tail = new_node;
         current->next = new_node;
+        new_node->previous = current;
     }
     list->size++;
     return 0;
-}
-
-NODE* get_node_at_index(LinkedList* list, size_t index) {
-	/*
-	Function to insert a new node at a certain index.
-	Arguments:
-		LinkedList* list	-> Linked list to get the node from.
-		size_t index		-> Index to get node from
-	Return:
-		NODE* 				-> Address for the node, NULL id index does not exist.
-	*/
-    if (index >= list->size) return NULL; // Index out of bounds
-    NODE* current = list->head;
-    for (size_t i = 0; i < index; i++) current = current->next;
-    return current;
 }
 
 uint8_t remove_node_at_index(LinkedList* list, size_t index) {
@@ -214,16 +222,15 @@ uint8_t remove_node_at_index(LinkedList* list, size_t index) {
     NODE* current = list->head;
     if (index == 0) {
         list->head = current->next;
-        free(current);
+        if (list->head != NULL) list->head->previous = NULL;
+        if (list->size == 1) list->tail = NULL;
     } else {
-        NODE* previous = NULL;
-        for (size_t i = 0; i < index; i++) {
-            previous = current;
-            current = current->next;
-        }
-        previous->next = current->next;
-        free(current);
+        for (size_t i = 0; i < index; i++) current = current->next;
+        current->previous->next = current->next;
+        if (current->next != NULL) current->next->previous = current->previous;
+        else list->tail = current->previous;
     }
+    free(current);
     list->size--;
     return 0;
 }
@@ -242,7 +249,7 @@ int8_t find_node(LinkedList* list, uint8_t (*check)(void*)) {
     NODE* current = list->head;
     int8_t index = 0;
     while (current != NULL) {
-        if (check(current) == 1) return index;
+        if (check(current->data) == 1) return index;
         current = current->next;
         index++;
     }
@@ -264,7 +271,7 @@ int8_t find_node_from(LinkedList* list, uint8_t (*check)(void*), uint8_t from_in
     NODE* current = list->head;
     int8_t index = 0;
     while (current != NULL) {
-        if ((check(current) == 1)&&(index>=from_index)) return index;
+        if (index>=from_index && check(current->data) == 1) return index;
         current = current->next;
         index++;
     }
@@ -284,13 +291,13 @@ uint8_t count_occurences(LinkedList* list, uint8_t (*check)(void*)) {
     NODE* current = list->head;
     int8_t count = 0;
     while (current != NULL) {
-        if (check(current) == 1) count++;
+        if (check(current->data) == 1) count++;
         current = current->next;
     }
     return count;
 }
 
-void sort_list(LinkedList* list, uint8_t (*compare)(void*, void*)) {
+void sort_list_original(LinkedList* list, int32_t (*compare)(void*, void*)) {
     /*
     Sorts a LinkedList using an optimized bubble sort.
     If the return of compare is 1, then the first argument is passed to the right
@@ -302,7 +309,7 @@ void sort_list(LinkedList* list, uint8_t (*compare)(void*, void*)) {
         swapped = 0;
         NODE* current = list->head;
         while (current->next != first_correct_element) {
-            if (compare(current, current->next) == 1) {
+            if (compare(current->data, current->next->data) == 1) {
                 void* temp = current->data;
                 current->data = current->next->data;
                 current->next->data = temp;
@@ -310,39 +317,109 @@ void sort_list(LinkedList* list, uint8_t (*compare)(void*, void*)) {
             }
             current = current->next;
         }
-        first_correct_element = current; // Update the end to the last sorted node
+        first_correct_element = current;
     } while (swapped);
 }
 
-void three_way_partition(LinkedList* list, LinkedList* less, LinkedList* equal, LinkedList* greater, int32_t (*compare)(void*, void*)) {
-    /*
-    Used in three-way quick sort. If compare is less than 0, left. If 0, middle. Else right.
-    */
-    if (list->head == NULL) return;
 
-    NODE* current = list->head;
-    void* pivot = current->data;
+// To delete
 
-    while (current != NULL) {
-        if (compare(current->data, pivot) < 0) {
-            // Add to less
-            NODE* next = current->next;
-            add_node(less, current->data); // Use add_node to add to the less list
-            current = next;
-        } else if (compare(current->data, pivot) == 0) {
-            // Add to equal
-            NODE* next = current->next;
-            add_node(equal, current->data); // Use add_node to add to the equal list
-            current = next;
-        } else {
-            // Add to greater
-            NODE* next = current->next;
-            add_node(greater, current->data); // Use add_node to add to the greater list
-            current = next;
-        }
-    }
+int32_t compare_ints(void* a, void* b) {
+	uint8_t val_a = *(uint8_t*)a;
+	uint8_t val_b = *(uint8_t*)b;
+	return val_a > val_b ? 1 : 0;
 }
 
+// Helper to print the list
+void print_list(LinkedList* list) {
+	NODE* current = list->head;
+	printf("NULL -> ");
+	while (current != NULL) {
+		printf("%d -> ", *(int32_t*)current->data);
+		current = current->next;
+	}
+	printf("NULL\n");
+}
+
+
+// TODO: DEBUG
+void sort_list(LinkedList* list, int32_t (*compare)(void*, void*)) {
+    if (list->head == NULL || list->head->next == NULL) {
+        printf("No need to sort: List is empty or has only one element.\n");
+        return;
+    }
+    printf("Starting bubble sort...\n");
+
+	NODE* current;
+	for (uint8_t i = 0; i < list->size - 1; i++){
+		// Last i elements are already in place
+		current = list->head;
+		for (uint8_t j = 0; j < list->size - i - 1; j++) {
+			if (compare(current->data, current->next->data) == 1) {
+				/*previous | current | next | next->next*/
+				/*para mudar o current e o next*/
+				if (current->previous!=NULL && current->next!=NULL && current->next->next!=NULL){
+					// both to swap are in the middle of the list
+					current->next->previous = current->previous;
+					current->previous->next = current->next;
+					current->previous = current->next;
+					current->next = current->next->next;
+					current->next->previous->next = current;
+					current->next->previous = current;
+				} else if (current->previous!=NULL && current->next!=NULL){
+					// both to swap are in the end of the list
+					current->previous->next = current->next;
+					current->next->next = current;
+					current->next->previous = current->previous;
+					current->previous = current->next;
+					current->next = NULL;
+					// update the tail element
+					list->tail = current;
+				} else if (current->next->next!=NULL){
+					// the elements to swap are the first two of the list
+					current->next->next->previous = current;
+					current->next->previous = NULL;
+					current->previous = current->next;
+					current->next = current->next->next;
+					current->previous->next = current;
+					// since the head changed, update the head
+					list->head = current->previous;
+				} else {
+					// since the head changed, update the head
+					list->head = current->next;
+					list->tail = current;
+					// update internal
+					list->head->previous = NULL;
+					list->tail->next = NULL;
+					list->head->next = list->tail;
+					list->tail->previous = list->head;
+				}
+			}
+			else current = current->next;
+		}
+	}
+    printf("Bubble sort completed.\n");
+    return;
+}
+
+
+NODE* get_node_at_index(LinkedList* list, size_t index) {
+	/*
+	Function to retrieve a node at a certain index.
+	Arguments:
+		LinkedList* list	-> Linked list to get the node from.
+		size_t index		-> Index to get node from
+	Return:
+		NODE* 				-> Address for the node, NULL id index does not exist.
+	*/
+    if (index >= list->size) return NULL; // Index out of bounds
+    NODE* current = list->head;
+    for (size_t i = 0; i < index; i++) current = current->next;
+    return current;
+}
+
+
+// TODO: QUICK SORT JUST BUGGING OUT!!
 LinkedList* concatenate(LinkedList* less, LinkedList* equal, LinkedList* greater) {
     /*
     Concatenates three linked lists into a single linked list.
@@ -374,30 +451,79 @@ LinkedList* concatenate(LinkedList* less, LinkedList* equal, LinkedList* greater
     return result;
 }
 
-void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
-    if (list->head == NULL || list->head->next == NULL) return;
+void three_way_partition(LinkedList* list, LinkedList* less, LinkedList* equal, LinkedList* greater, int32_t (*compare)(void*, void*)) {
+    /*
+    Used in three-way quick sort. If compare is less than 0, left. If 0, middle. Else right.
+    */
+    if (list->head == NULL) return;
 
+    NODE* current = list->head;
+    void* pivot = current->data;
+
+    while (current != NULL) {
+        int32_t cmp = compare(current->data, pivot);
+        if (cmp < 0) {
+            add_node(less, current->data);
+        } else if (cmp == 0) {
+            add_node(equal, current->data);
+        } else {
+            add_node(greater, current->data);
+        }
+        current = current->next;
+    }
+}
+
+void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
+ 	if (list == NULL || list->head == NULL) return;
     LinkedList* less = create_linked_list();
     LinkedList* equal = create_linked_list();
     LinkedList* greater = create_linked_list();
 
-    // Partition the list
     three_way_partition(list, less, equal, greater, compare);
-
-    // Recursively sort the left and right parts
     three_way_quick_sort(less, compare);
     three_way_quick_sort(greater, compare);
 
-    // Concatenate the sorted lists
-    LinkedList* sorted_list = concatenate(less, equal, greater);
+    LinkedList* sorted = concatenate(less, equal, greater);
 
-    // Update the original list
-    list->head = sorted_list->head;
-    list->size = less->size + equal->size + greater->size;
+    list->head = sorted->head;
+    list->tail = sorted->tail;
+    list->size = sorted->size;
 
-    // Clean up temporary lists
-    delete_linked_list(less);
-    delete_linked_list(equal);
-    delete_linked_list(greater);
-    delete_linked_list(sorted_list);
+    free(less);
+    free(equal);
+    free(greater);
+    free(sorted);
 }
+
+
+#ifdef __compile_lists__
+    int32_t main() {
+		// Helper to compare integers
+		int32_t a, b, c;
+		a = 10;
+		b = 11;
+		c = 20;
+
+		// Empty list
+		printf("Test 1: Empty list\n");
+		printf("\tCreating...\n");
+		LinkedList* empty = create_linked_list();
+		add_node(empty, &a);
+		add_node(empty, &c);
+		add_node(empty, &b);
+		add_node(empty, &a);
+		add_node(empty, &c);
+		add_node(empty, &b);
+		printf("\t\tCreated on: %p\n", empty);
+		printf("\tStarting sort...\n");
+		sort_list(empty, compare_ints);
+		printf("\t\tFinished sort\n");
+		printf("\tPrinting list...\n");
+		print_list(empty);
+		printf("\t\tFinished printing\n");
+		printf("\tDeleting list...\n");
+		delete_linked_list(empty);
+		printf("\t\tFinished deleting\n");
+		return 0;
+	}
+#endif
