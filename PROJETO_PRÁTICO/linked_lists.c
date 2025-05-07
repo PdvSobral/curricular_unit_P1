@@ -469,8 +469,6 @@ void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
 		return val_a > val_b ? 1 : 0;
 	}
 
-	void hand(void*){return;}
-
 	uint8_t comparison(void* data){
 			return (*(int*)data == check_value) ? 1 : 0;
 	}
@@ -530,8 +528,11 @@ void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
 		int count = count_occurences(list, count_lol);
 		printf("Count of occurrences of value 2: %d\n", count);
 
+		printf("Before sorting: ");
+		print_list(list);
 		// Sort the list
-		sort_list(list, compare_ints);
+		//printf("Bubble sorting...\n"); sort_list(list, compare_ints);
+		printf("Three way quick sorting...\n"); three_way_quick_sort(list, compare_ints);
 		printf("After sorting: ");
 		print_list(list);
 
