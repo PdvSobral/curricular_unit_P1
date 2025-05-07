@@ -35,8 +35,6 @@ typedef struct _linkedlist {
     size_t size;
 } LinkedList;
 
-
-
 LinkedList* create_linked_list() {
 	/*
 	Function to create a new linked list
@@ -95,7 +93,7 @@ NODE* add_node(LinkedList* list, void* data) {
     return new_node;
 }
 
-void delete_linked_list(LinkedList* list) {
+void delete_linked_list(LinkedList* list, void (*handler)(void*)) {
 	/*
 	Function to delete and free the space of a linked list
 	Arguments:
@@ -106,6 +104,7 @@ void delete_linked_list(LinkedList* list) {
     NODE* current = list->head;
     NODE* next_node;
     while (current != NULL) {
+    	handler(current->data);
         next_node = current->next;
         free(current);
         current = next_node;
@@ -297,52 +296,6 @@ uint8_t count_occurences(LinkedList* list, uint8_t (*check)(void*)) {
     return count;
 }
 
-void sort_list_original(LinkedList* list, int32_t (*compare)(void*, void*)) {
-    /*
-    Sorts a LinkedList using an optimized bubble sort.
-    If the return of compare is 1, then the first argument is passed to the right
-    */
-    if (list->head == NULL || list->head->next == NULL) return;
-    uint8_t swapped;
-    NODE* first_correct_element = NULL;
-    do {
-        swapped = 0;
-        NODE* current = list->head;
-        while (current->next != first_correct_element) {
-            if (compare(current->data, current->next->data) == 1) {
-                void* temp = current->data;
-                current->data = current->next->data;
-                current->next->data = temp;
-                swapped = 1;
-            }
-            current = current->next;
-        }
-        first_correct_element = current;
-    } while (swapped);
-}
-
-
-// To delete
-
-int32_t compare_ints(void* a, void* b) {
-	uint8_t val_a = *(uint8_t*)a;
-	uint8_t val_b = *(uint8_t*)b;
-	return val_a > val_b ? 1 : 0;
-}
-
-// Helper to print the list
-void print_list(LinkedList* list) {
-	NODE* current = list->head;
-	printf("NULL -> ");
-	while (current != NULL) {
-		printf("%d -> ", *(int32_t*)current->data);
-		current = current->next;
-	}
-	printf("NULL\n");
-}
-
-
-// TODO: DEBUG
 void sort_list(LinkedList* list, int32_t (*compare)(void*, void*)) {
     if (list->head == NULL || list->head->next == NULL) {
         printf("No need to sort: List is empty or has only one element.\n");
@@ -402,7 +355,6 @@ void sort_list(LinkedList* list, int32_t (*compare)(void*, void*)) {
     return;
 }
 
-
 NODE* get_node_at_index(LinkedList* list, size_t index) {
 	/*
 	Function to retrieve a node at a certain index.
@@ -418,6 +370,17 @@ NODE* get_node_at_index(LinkedList* list, size_t index) {
     return current;
 }
 
+
+// Helper to print the list
+void print_list(LinkedList* list) {
+	NODE* current = list->head;
+	printf("NULL -> ");
+	while (current != NULL) {
+		printf("%d -> ", *(int32_t*)current->data);
+		current = current->next;
+	}
+	printf("NULL\n");
+}
 
 // TODO: QUICK SORT JUST BUGGING OUT!!
 LinkedList* concatenate(LinkedList* less, LinkedList* equal, LinkedList* greater) {
@@ -497,33 +460,85 @@ void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
 
 
 #ifdef __compile_lists__
-    int32_t main() {
-		// Helper to compare integers
-		int32_t a, b, c;
-		a = 10;
-		b = 11;
-		c = 20;
+	int check_value = 3;
 
-		// Empty list
-		printf("Test 1: Empty list\n");
-		printf("\tCreating...\n");
-		LinkedList* empty = create_linked_list();
-		add_node(empty, &a);
-		add_node(empty, &c);
-		add_node(empty, &b);
-		add_node(empty, &a);
-		add_node(empty, &c);
-		add_node(empty, &b);
-		printf("\t\tCreated on: %p\n", empty);
-		printf("\tStarting sort...\n");
-		sort_list(empty, compare_ints);
-		printf("\t\tFinished sort\n");
-		printf("\tPrinting list...\n");
-		print_list(empty);
-		printf("\t\tFinished printing\n");
-		printf("\tDeleting list...\n");
-		delete_linked_list(empty);
-		printf("\t\tFinished deleting\n");
+
+	int32_t compare_ints(void* a, void* b) {
+		uint8_t val_a = *(uint8_t*)a;
+		uint8_t val_b = *(uint8_t*)b;
+		return val_a > val_b ? 1 : 0;
+	}
+
+	void hand(void*){return;}
+
+	uint8_t comparison(void* data){
+			return (*(int*)data == check_value) ? 1 : 0;
+	}
+
+	uint8_t count_lol(void* data) {
+		return (*(int*)data == 2) ? 1 : 0;
+	}
+
+
+	int main() {
+		// Create a linked list
+		LinkedList* list = create_linked_list();
+		if (list == NULL) {
+			printf("Failed to create linked list.\n");
+			return 1;
+		}
+
+		// Add nodes to the list
+		for (int i = 0; i < 5; i++) {
+			int* data = malloc(sizeof(int));
+			*data = i + 1; // Adding values 1 to 5
+			add_node(list, data);
+		}
+
+		// Print the list
+		printf("Initial list: ");
+		print_list(list);
+
+		// Insert at index
+		int* new_data = malloc(sizeof(int));
+		*new_data = 10;
+		if (insert_at_index(list, new_data, 2) == 0) {
+			printf("After inserting 10 at index 2: ");
+			print_list(list);
+		} else {
+			printf("Failed to insert at index 2.\n");
+		}
+
+		// Remove node at index
+		if (remove_node_at_index(list, 1) == 0) {
+			printf("After removing node at index 1: ");
+			print_list(list);
+		} else {
+			printf("Failed to remove node at index 1.\n");
+		}
+
+		// Find a node
+
+		int8_t found_index = find_node(list, comparison);
+		if (found_index != -1) {
+			printf("Found value %d at index %d.\n", check_value, found_index);
+		} else {
+			printf("Value %d not found in the list.\n", check_value);
+		}
+
+		// Count occurrences
+		int count = count_occurences(list, count_lol);
+		printf("Count of occurrences of value 2: %d\n", count);
+
+		// Sort the list
+		sort_list(list, compare_ints);
+		printf("After sorting: ");
+		print_list(list);
+
+		// Clean up
+		delete_linked_list(list, free);
+		printf("Linked list deleted.\n");
+
 		return 0;
 	}
 #endif
