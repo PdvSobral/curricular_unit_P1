@@ -32,8 +32,9 @@ typedef struct _node {
 typedef struct _linkedlist {
     NODE* head;
     NODE* tail;
-    size_t size;
+    int16_t size;
 } LinkedList;
+
 
 LinkedList* create_linked_list() {
 	/*
@@ -69,7 +70,10 @@ NODE* create_node(void *data) {
     return new_node;
 }
 
-NODE* add_node(LinkedList* list, void* data) {
+
+// TODO: To refactor
+
+NODE* append_data_to_list(LinkedList* list, void* data) {
 	/*
 	Function to create a new node at the end of a linked list
 	Arguments:
@@ -91,6 +95,115 @@ NODE* add_node(LinkedList* list, void* data) {
     }
     list->size++;
     return new_node;
+}
+
+NODE* insert_node_at_end(LinkedList* list, NODE* new_node) {
+	/*
+	Function to create a new node at the end of a linked list
+	Arguments:
+		LinkedList* list	-> Linked List to add the node to
+		void* data			-> Data to be contained in the node
+	Return:
+		Pointer to the newly created Node
+	*/
+    if (list->head == NULL) {
+        list->head = new_node;
+        list->tail = new_node;
+    } else {
+        list->tail->next = new_node;  	  // Append to the end
+        new_node->previous = list->tail;  // Previous of new node is the old tail
+        list->tail = new_node;  		  // Move the tail pointer to the new node
+    }
+    list->size++;
+    return new_node;
+}
+
+NODE* insert_node_at_beggining(LinkedList* list, NODE* new_node) {
+	/*
+	Function to create a new node at the end of a linked list
+	Arguments:
+		LinkedList* list	-> Linked List to add the node to
+		void* data			-> Data to be contained in the node
+	Return:
+		Pointer to the newly created Node
+	*/
+    if (list->head == NULL) {
+        list->head = new_node;
+        list->tail = new_node;
+    } else {
+    	new_node->next = list->head;	 // Point to current first term
+    	list->head->previous = new_node; // Point current first term previous to the new_node
+    	list->head = new_node;			 // Update head to the new_node
+    }
+    list->size++;
+    return new_node;
+}
+
+uint8_t insert_node_at_index(LinkedList* list, NODE* new_node, int16_t index) {
+    /*
+	Function to insert a new node at a certain index.
+	Arguments:
+		LinkedList* list	-> Linked list to add the nodes to.
+		void* data			-> Data for the node
+		int16_t index		-> Index to insert on
+	Return:
+		uint8_t 			-> Status: 0 all right,
+									   1: index out of bounds
+	*/
+    if (index > list->size) return 1;
+    if (index == 0) insert_node_at_beggining(list, new_node);
+    else if (index == -1 || index == list->size) insert_node_at_end(list, new_node);
+    else {
+        NODE* current = list->head;
+        for (int16_t i = 0; i < index - 1; i++) current = current->next;
+        new_node->next = current->next;
+        if (current->next != NULL) current->next->previous = new_node;
+        else list->tail = new_node;
+        current->next = new_node;
+        new_node->previous = current;
+    }
+    list->size++;
+    return 0;
+}
+
+
+
+
+
+
+uint8_t insert_at_index(LinkedList* list, void* data, int16_t index) {
+    /*
+	Function to insert a new node at a certain index.
+	Arguments:
+		LinkedList* list	-> Linked list to add the nodes to.
+		void* data			-> Data for the node
+		int16_t index		-> Index to insert on
+	Return:
+		uint8_t 			-> Status: 0 all right, 1: index out of bounds, 2: memory allocation for node failed
+	*/
+    if (index > list->size) return 1;
+    NODE* new_node = create_node(data);
+    if (new_node == NULL) return 2;
+    if (index == 0) {
+        new_node->next = list->head;
+        if (list->head != NULL) {
+            list->head->previous = new_node;
+        }
+        list->head = new_node;
+        if (list->size == 0) {
+            list->tail = new_node;
+        }
+    } else {
+        NODE* current = list->head;
+        for (int16_t i = 0; i < index - 1; i++) current = current->next;
+        new_node->next = current->next;
+        if (current->next != NULL) current->next->previous = new_node;
+        else list->tail = new_node;
+        current->next = new_node;
+        new_node->previous = current;
+    }
+    list->size++;
+    return 0;
 }
 
 void delete_linked_list(LinkedList* list, void (*handler)(void*)) {
@@ -173,47 +286,12 @@ void remove_nodes(LinkedList* list, uint8_t (*condition)(void*)) {
     }
 }
 
-uint8_t insert_at_index(LinkedList* list, void* data, size_t index) {
-    /*
-	Function to insert a new node at a certain index.
-	Arguments:
-		LinkedList* list	-> Linked list to add the nodes to.
-		void* data			-> Data for the node
-		size_t index		-> Index to insert on
-	Return:
-		uint8_t 			-> Status: 0 all right, 1: index out of bounds, 2: memory allocation for node failed
-	*/
-    if (index > list->size) return 1;
-    NODE* new_node = create_node(data);
-    if (new_node == NULL) return 2;
-    if (index == 0) {
-        new_node->next = list->head;
-        if (list->head != NULL) {
-            list->head->previous = new_node;
-        }
-        list->head = new_node;
-        if (list->size == 0) {
-            list->tail = new_node;
-        }
-    } else {
-        NODE* current = list->head;
-        for (size_t i = 0; i < index - 1; i++) current = current->next;
-        new_node->next = current->next;
-        if (current->next != NULL) current->next->previous = new_node;
-        else list->tail = new_node;
-        current->next = new_node;
-        new_node->previous = current;
-    }
-    list->size++;
-    return 0;
-}
-
-uint8_t remove_node_at_index(LinkedList* list, size_t index) {
+uint8_t remove_node_at_index(LinkedList* list, int16_t index) {
 	/*
 	Function to insert a new node at a certain index.
 	Arguments:
 		LinkedList* list	-> Linked list to delete the node from.
-		size_t index		-> Index to delete node on
+		int16_t index		-> Index to delete node on
 	Return:
 		uint8_t 				-> Exit status. 0: All right, 1: Index out of bounds.
 	*/
@@ -224,7 +302,7 @@ uint8_t remove_node_at_index(LinkedList* list, size_t index) {
         if (list->head != NULL) list->head->previous = NULL;
         if (list->size == 1) list->tail = NULL;
     } else {
-        for (size_t i = 0; i < index; i++) current = current->next;
+        for (int16_t i = 0; i < index; i++) current = current->next;
         current->previous->next = current->next;
         if (current->next != NULL) current->next->previous = current->previous;
         else list->tail = current->previous;
@@ -355,18 +433,18 @@ void sort_list(LinkedList* list, int32_t (*compare)(void*, void*)) {
     return;
 }
 
-NODE* get_node_at_index(LinkedList* list, size_t index) {
+NODE* get_node_at_index(LinkedList* list, int16_t index) {
 	/*
 	Function to retrieve a node at a certain index.
 	Arguments:
 		LinkedList* list	-> Linked list to get the node from.
-		size_t index		-> Index to get node from
+		int16_t index		-> Index to get node from
 	Return:
 		NODE* 				-> Address for the node, NULL id index does not exist.
 	*/
     if (index >= list->size) return NULL; // Index out of bounds
     NODE* current = list->head;
-    for (size_t i = 0; i < index; i++) current = current->next;
+    for (int16_t i = 0; i < index; i++) current = current->next;
     return current;
 }
 
@@ -395,17 +473,17 @@ LinkedList* concatenate(LinkedList* less, LinkedList* equal, LinkedList* greater
     if (result == NULL) return NULL;
     NODE* current = less->head;
     while (current != NULL) {
-        add_node(result, current->data);
+        append_data_to_list(result, current->data);
         current = current->next;
     }
     current = equal->head;
     while (current != NULL) {
-        add_node(result, current->data);
+        append_data_to_list(result, current->data);
         current = current->next;
     }
     current = greater->head;
     while (current != NULL) {
-        add_node(result, current->data);
+        append_data_to_list(result, current->data);
         current = current->next;
     }
     return result;
@@ -421,11 +499,11 @@ void three_way_partition(LinkedList* list, LinkedList* less, LinkedList* equal, 
     while (current != NULL) {
         int32_t cmp = compare(current->data, pivot);
         if (cmp < 0) {
-            add_node(less, current->data);
+            append_data_to_list(less, current->data);
         } else if (cmp == 0) {
-            add_node(equal, current->data);
+            append_data_to_list(equal, current->data);
         } else {
-            add_node(greater, current->data);
+            append_data_to_list(greater, current->data);
         }
         current = current->next;
     }
@@ -490,7 +568,7 @@ void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
 		for (int i = 0; i < 5; i++) {
 			int* data = malloc(sizeof(int));
 			*data = i + 1; // Adding values 1 to 5
-			add_node(list, data);
+			append_data_to_list(list, data);
 		}
 
 		// Print the list
