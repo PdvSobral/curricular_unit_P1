@@ -370,8 +370,6 @@ NODE* get_node_at_index(LinkedList* list, size_t index) {
     return current;
 }
 
-
-// Helper to print the list
 void print_list(LinkedList* list) {
 	NODE* current = list->head;
 	printf("NULL -> ");
@@ -382,7 +380,6 @@ void print_list(LinkedList* list) {
 	printf("NULL\n");
 }
 
-// TODO: QUICK SORT JUST BUGGING OUT!!
 LinkedList* concatenate(LinkedList* less, LinkedList* equal, LinkedList* greater) {
     /*
     Concatenates three linked lists into a single linked list.
@@ -418,8 +415,6 @@ void three_way_partition(LinkedList* list, LinkedList* less, LinkedList* equal, 
     /*
     Used in three-way quick sort. If compare is less than 0, left. If 0, middle. Else right.
     */
-    if (list->head == NULL) return;
-
     NODE* current = list->head;
     void* pivot = current->data;
 
@@ -437,12 +432,14 @@ void three_way_partition(LinkedList* list, LinkedList* less, LinkedList* equal, 
 }
 
 void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
- 	if (list == NULL || list->head == NULL) return;
+ 	if (list == NULL || list->head == NULL || list->head->next == NULL) return;
+
     LinkedList* less = create_linked_list();
     LinkedList* equal = create_linked_list();
     LinkedList* greater = create_linked_list();
 
     three_way_partition(list, less, equal, greater, compare);
+
     three_way_quick_sort(less, compare);
     three_way_quick_sort(greater, compare);
 
@@ -459,14 +456,17 @@ void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
 }
 
 
+
 #ifdef __compile_lists__
 	int check_value = 3;
-
-
 	int32_t compare_ints(void* a, void* b) {
 		uint8_t val_a = *(uint8_t*)a;
 		uint8_t val_b = *(uint8_t*)b;
 		return val_a > val_b ? 1 : 0;
+	}
+
+	int32_t compare_ints2(void* a, void* b) {
+		return *(uint8_t*) a - *(uint8_t*)b;
 	}
 
 	uint8_t comparison(void* data){
@@ -532,7 +532,7 @@ void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
 		print_list(list);
 		// Sort the list
 		//printf("Bubble sorting...\n"); sort_list(list, compare_ints);
-		printf("Three way quick sorting...\n"); three_way_quick_sort(list, compare_ints);
+		printf("Three way quick sorting...\n"); three_way_quick_sort(list, compare_ints2);
 		printf("After sorting: ");
 		print_list(list);
 
