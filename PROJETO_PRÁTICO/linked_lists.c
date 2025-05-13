@@ -70,9 +70,6 @@ NODE* create_node(void *data) {
     return new_node;
 }
 
-
-// TODO: To refactor
-
 NODE* append_data_to_list(LinkedList* list, void* data) {
 	/*
 	Function to create a new node at the end of a linked list
@@ -139,7 +136,7 @@ NODE* insert_node_at_beggining(LinkedList* list, NODE* new_node) {
     return new_node;
 }
 
-uint8_t insert_node_at_index(LinkedList* list, NODE* new_node, int16_t index) {
+uint8_t insert_node_at_index(LinkedList* list, NODE* new_node, int32_t index) {
     /*
 	Function to insert a new node at a certain index.
 	Arguments:
@@ -155,7 +152,7 @@ uint8_t insert_node_at_index(LinkedList* list, NODE* new_node, int16_t index) {
     else if (index == -1 || index == list->size) insert_node_at_end(list, new_node);
     else {
         NODE* current = list->head;
-        for (int16_t i = 0; i < index - 1; i++) current = current->next;
+        for (int32_t i = 0; i < index - 1; i++) current = current->next;
         new_node->next = current->next;
         if (current->next != NULL) current->next->previous = new_node;
         else list->tail = new_node;
@@ -166,18 +163,13 @@ uint8_t insert_node_at_index(LinkedList* list, NODE* new_node, int16_t index) {
     return 0;
 }
 
-
-
-
-
-
-uint8_t insert_at_index(LinkedList* list, void* data, int16_t index) {
+uint8_t insert_at_index(LinkedList* list, void* data, int32_t index) {
     /*
 	Function to insert a new node at a certain index.
 	Arguments:
 		LinkedList* list	-> Linked list to add the nodes to.
 		void* data			-> Data for the node
-		int16_t index		-> Index to insert on
+		int32_t index		-> Index to insert on
 	Return:
 		uint8_t 			-> Status: 0 all right, 1: index out of bounds, 2: memory allocation for node failed
 	*/
@@ -195,7 +187,7 @@ uint8_t insert_at_index(LinkedList* list, void* data, int16_t index) {
         }
     } else {
         NODE* current = list->head;
-        for (int16_t i = 0; i < index - 1; i++) current = current->next;
+        for (int32_t i = 0; i < index - 1; i++) current = current->next;
         new_node->next = current->next;
         if (current->next != NULL) current->next->previous = new_node;
         else list->tail = new_node;
@@ -206,7 +198,7 @@ uint8_t insert_at_index(LinkedList* list, void* data, int16_t index) {
     return 0;
 }
 
-void delete_linked_list(LinkedList* list, void (*handler)(void*)) {
+void delete_linked_list(LinkedList* list, void (*data_handler)(void*)) {
 	/*
 	Function to delete and free the space of a linked list
 	Arguments:
@@ -217,7 +209,7 @@ void delete_linked_list(LinkedList* list, void (*handler)(void*)) {
     NODE* current = list->head;
     NODE* next_node;
     while (current != NULL) {
-    	handler(current->data);
+    	data_handler(current->data);
         next_node = current->next;
         free(current);
         current = next_node;
@@ -242,7 +234,10 @@ void traverse_list(LinkedList* list, void (*func)(void*)) {
     }
 }
 
-void remove_nodes(LinkedList* list, uint8_t (*condition)(void*)) {
+
+
+
+void remove_nodes(LinkedList* list, int32_t (*condition)(void*), void (*data_handler)(void*)) {
 	/*
 	Function to remove every node that meets a certain criteria.
 	Arguments:
@@ -272,6 +267,7 @@ void remove_nodes(LinkedList* list, uint8_t (*condition)(void*)) {
                     list->tail = previous;  // If it's the last node, update the tail
                 }
             }
+            data_handler(current->data);
             free(current);
             if (previous) {
 				current = previous->next; // Move to the next node
@@ -286,7 +282,7 @@ void remove_nodes(LinkedList* list, uint8_t (*condition)(void*)) {
     }
 }
 
-uint8_t remove_node_at_index(LinkedList* list, int16_t index) {
+uint8_t remove_node_at_index(LinkedList* list, int16_t index, void (*data_handler)(void*)) {
 	/*
 	Function to insert a new node at a certain index.
 	Arguments:
@@ -307,12 +303,13 @@ uint8_t remove_node_at_index(LinkedList* list, int16_t index) {
         if (current->next != NULL) current->next->previous = current->previous;
         else list->tail = current->previous;
     }
+    data_handler(current->data);
     free(current);
     list->size--;
     return 0;
 }
 
-int8_t find_node(LinkedList* list, uint8_t (*check)(void*)) {
+int8_t find_node(LinkedList* list, int32_t (*check)(void*)) {
 	/*
 	Function to find the first node that meets a certain criteria.
 	Arguments:
@@ -324,7 +321,7 @@ int8_t find_node(LinkedList* list, uint8_t (*check)(void*)) {
 									   Else, no index found
 	*/
     NODE* current = list->head;
-    int8_t index = 0;
+    int32_t index = 0;
     while (current != NULL) {
         if (check(current->data) == 1) return index;
         current = current->next;
@@ -333,7 +330,7 @@ int8_t find_node(LinkedList* list, uint8_t (*check)(void*)) {
     return -1;
 }
 
-int8_t find_node_from(LinkedList* list, uint8_t (*check)(void*), uint8_t from_index) {
+int8_t find_node_from(LinkedList* list, int32_t (*check)(void*), int32_t from_index) {
 	/*
 	Function to find the first node that meets a certain criteria, but only from a certain address.
 	Arguments:
@@ -346,7 +343,7 @@ int8_t find_node_from(LinkedList* list, uint8_t (*check)(void*), uint8_t from_in
 									   Else, no index found
 	*/
     NODE* current = list->head;
-    int8_t index = 0;
+    int32_t index = 0;
     while (current != NULL) {
         if (index>=from_index && check(current->data) == 1) return index;
         current = current->next;
@@ -355,7 +352,7 @@ int8_t find_node_from(LinkedList* list, uint8_t (*check)(void*), uint8_t from_in
     return -1;
 }
 
-uint8_t count_occurences(LinkedList* list, uint8_t (*check)(void*)) {
+uint8_t count_occurences(LinkedList* list, int32_t (*check)(void*)) {
 	/*
 	Function to count the numbers of nodes that meet a certain criteria.
 	Arguments:
@@ -366,7 +363,7 @@ uint8_t count_occurences(LinkedList* list, uint8_t (*check)(void*)) {
 		uint8_t						-> Number of ocurrences found in the list
 	*/
     NODE* current = list->head;
-    int8_t count = 0;
+    int32_t count = 0;
     while (current != NULL) {
         if (check(current->data) == 1) count++;
         current = current->next;
@@ -547,11 +544,11 @@ void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
 		return *(uint8_t*) a - *(uint8_t*)b;
 	}
 
-	uint8_t comparison(void* data){
+	int32_t comparison(void* data){
 			return (*(int*)data == check_value) ? 1 : 0;
 	}
 
-	uint8_t count_lol(void* data) {
+	int32_t count_lol(void* data) {
 		return (*(int*)data == 2) ? 1 : 0;
 	}
 
@@ -586,7 +583,7 @@ void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
 		}
 
 		// Remove node at index
-		if (remove_node_at_index(list, 1) == 0) {
+		if (remove_node_at_index(list, 1, free) == 0) {
 			printf("After removing node at index 1: ");
 			print_list(list);
 		} else {
