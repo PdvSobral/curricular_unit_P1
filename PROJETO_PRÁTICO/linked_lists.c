@@ -5,7 +5,51 @@
 
 This file contains the functions developed for a simple implementation of linked lists.
 For now it does not have much, but the idea is to have simple and double linked lists support.
+UPDATE:
+	Now only has double, qeue and stack are implementable with these methods, but maybe add specific
+	The docstrings for the functions are not updated to reflect new logic and/or updated signature
+
+If imported by another file, the following packages should already have been loaded:
+	<stdlib.h> <stdint.h> <stdio.h>
+
+	DATA TYPES defined:
+
+		NODE (struct _node) {
+			void* data;
+			struct _node* next;
+			struct _node* previous;
+		}
+		LinkedList (struct _linkedlist) {
+			NODE* head;
+			NODE* tail;
+			int16_t size;
+		}
+
+	METHODS AND FUNCTIONS defined:
+
+		LinkedList*  create_linked_list();
+		NODE*        create_node               (void *data);
+		NODE*        append_data_to_list       (LinkedList* list, void* data);
+		NODE*        insert_node_at_end        (LinkedList* list, NODE* new_node);
+		NODE*        insert_node_at_beggining  (LinkedList* list, NODE* new_node);
+		int8_t       insert_node_at_index      (LinkedList* list, NODE* new_node, int32_t index);
+		uint8_t      insert_at_index           (LinkedList* list, void* data, int32_t index);
+		void         delete_linked_list        (LinkedList* list, void (*data_handler)(void*));
+		void         traverse_list             (LinkedList* list, void (*func)(void*));
+		NODE*        get_node_at_index         (LinkedList* list, int16_t index);
+		int32_t      find_node                 (LinkedList* list, int32_t (*check)(void*));
+		int32_t      find_node_from            (LinkedList* list, int32_t (*check)(void*), int32_t from_index);
+		int32_t      count_occurences          (LinkedList* list, int32_t (*check)(void*));
+		uint8_t      remove_node_at_index      (LinkedList* list, int16_t index, void (*data_handler)(void*));
+		void         remove_nodes              (LinkedList* list, int32_t (*condition)(void*), void (*data_handler)(void*));
+		LinkedList*  concatenate               (LinkedList* less, LinkedList* equal, LinkedList* greater);
+		void         three_way_partition       (LinkedList* list, LinkedList* less, LinkedList* equal, LinkedList* greater, int32_t (*compare)(void*, void*));
+		void         sort_list                 (LinkedList* list, int32_t (*compare)(void*, void*));
+		void         three_way_quick_sort      (LinkedList* list, int32_t (*compare)(void*, void*));
+		void         print_list                (LinkedList* list);
+
 */
+
 // Makes so that if "#define __main__" is not somewhere before this program is compiled an error ocurs, stopping compilation
 // para compilar diretamente, tenho de colocar "-z noexecstack" no gcc
 #ifndef __main__
@@ -234,8 +278,109 @@ void traverse_list(LinkedList* list, void (*func)(void*)) {
     }
 }
 
+NODE* get_node_at_index(LinkedList* list, int16_t index) {
+	/*
+	Function to retrieve a node at a certain index.
+	Arguments:
+		LinkedList* list	-> Linked list to get the node from.
+		int16_t index		-> Index to get node from
+	Return:
+		NODE* 				-> Address for the node, NULL id index does not exist.
+	*/
+    if (index >= list->size) return NULL; // Index out of bounds
+    NODE* current = list->head;
+    for (int16_t i = 0; i < index; i++) current = current->next;
+    return current;
+}
 
+int32_t find_node(LinkedList* list, int32_t (*check)(void*)) {
+	/*
+	Function to find the first node that meets a certain criteria.
+	Arguments:
+		LinkedList* list			-> Linked list to search on.
+		uint8_t (*contition)(void*)	-> Function to be used to check if the node is the wanted one.
+									   If the return is 1, then the index for the node in cause is returned.
+	Return:
+		int8_t						-> If positive, index for the node found with the lowest index.
+									   Else, no index found
+	*/
+    NODE* current = list->head;
+    int32_t index = 0;
+    while (current != NULL) {
+        if (check(current->data) == 1) return index;
+        current = current->next;
+        index++;
+    }
+    return -1;
+}
 
+int32_t find_node_from(LinkedList* list, int32_t (*check)(void*), int32_t from_index) {
+	/*
+	Function to find the first node that meets a certain criteria, but only from a certain address.
+	Arguments:
+		LinkedList* list			-> Linked list to search on.
+		uint8_t (*contition)(void*)	-> Function to be used to check if the node is the wanted one.
+									   If the return is 1, then the index for the node in cause is returned.
+		uint8_t from_index			-> Only search from that index onwards, index included
+	Return:
+		int8_t						-> If positive, index for the node found with the lowest index.
+									   Else, no index found
+	*/
+    NODE* current = list->head;
+    int32_t index = 0;
+    while (current != NULL) {
+        if (index>=from_index && check(current->data) == 1) return index;
+        current = current->next;
+        index++;
+    }
+    return -1;
+}
+
+int32_t count_occurences(LinkedList* list, int32_t (*check)(void*)) {
+	/*
+	Function to count the numbers of nodes that meet a certain criteria.
+	Arguments:
+		LinkedList* list			-> Linked list to search on.
+		uint8_t (*contition)(void*)	-> Function to be used to check if the node is the wanted one.
+									   If the return is 1, then the node is considered found.
+	Return:
+		uint8_t						-> Number of ocurrences found in the list
+	*/
+    NODE* current = list->head;
+    int32_t count = 0;
+    while (current != NULL) {
+        if (check(current->data) == 1) count++;
+        current = current->next;
+    }
+    return count;
+}
+
+uint8_t remove_node_at_index(LinkedList* list, int16_t index, void (*data_handler)(void*)) {
+	/*
+	Function to insert a new node at a certain index.
+	Arguments:
+		LinkedList* list	-> Linked list to delete the node from.
+		int16_t index		-> Index to delete node on
+	Return:
+		uint8_t 				-> Exit status. 0: All right, 1: Index out of bounds.
+	*/
+    if (index >= list->size) return 1;
+    NODE* current = list->head;
+    if (index == 0) {
+        list->head = current->next;
+        if (list->head != NULL) list->head->previous = NULL;
+        if (list->size == 1) list->tail = NULL;
+    } else {
+        for (int16_t i = 0; i < index; i++) current = current->next;
+        current->previous->next = current->next;
+        if (current->next != NULL) current->next->previous = current->previous;
+        else list->tail = current->previous;
+    }
+    data_handler(current->data);
+    free(current);
+    list->size--;
+    return 0;
+}
 
 void remove_nodes(LinkedList* list, int32_t (*condition)(void*), void (*data_handler)(void*)) {
 	/*
@@ -282,93 +427,55 @@ void remove_nodes(LinkedList* list, int32_t (*condition)(void*), void (*data_han
     }
 }
 
-uint8_t remove_node_at_index(LinkedList* list, int16_t index, void (*data_handler)(void*)) {
-	/*
-	Function to insert a new node at a certain index.
-	Arguments:
-		LinkedList* list	-> Linked list to delete the node from.
-		int16_t index		-> Index to delete node on
-	Return:
-		uint8_t 				-> Exit status. 0: All right, 1: Index out of bounds.
-	*/
-    if (index >= list->size) return 1;
-    NODE* current = list->head;
-    if (index == 0) {
-        list->head = current->next;
-        if (list->head != NULL) list->head->previous = NULL;
-        if (list->size == 1) list->tail = NULL;
-    } else {
-        for (int16_t i = 0; i < index; i++) current = current->next;
-        current->previous->next = current->next;
-        if (current->next != NULL) current->next->previous = current->previous;
-        else list->tail = current->previous;
-    }
-    data_handler(current->data);
-    free(current);
-    list->size--;
-    return 0;
-}
-
-int8_t find_node(LinkedList* list, int32_t (*check)(void*)) {
-	/*
-	Function to find the first node that meets a certain criteria.
-	Arguments:
-		LinkedList* list			-> Linked list to search on.
-		uint8_t (*contition)(void*)	-> Function to be used to check if the node is the wanted one.
-									   If the return is 1, then the index for the node in cause is returned.
-	Return:
-		int8_t						-> If positive, index for the node found with the lowest index.
-									   Else, no index found
-	*/
-    NODE* current = list->head;
-    int32_t index = 0;
+LinkedList* concatenate(LinkedList* less, LinkedList* equal, LinkedList* greater) {
+    /*
+    Concatenates three linked lists into a single linked list.
+    Arguments:
+        LinkedList* less      -> Pointer to the 'less' linked list.
+        LinkedList* equal     -> Pointer to the 'equal' linked list.
+        LinkedList* greater   -> Pointer to the 'greater' linked list.
+    Return:
+        LinkedList*          -> Pointer to the head of the concatenated linked list.
+                                If all input lists are NULL, it returns NULL.
+    */
+    LinkedList* result = create_linked_list();
+    if (result == NULL) return NULL;
+    NODE* current = less->head;
     while (current != NULL) {
-        if (check(current->data) == 1) return index;
-        current = current->next;
-        index++;
-    }
-    return -1;
-}
-
-int8_t find_node_from(LinkedList* list, int32_t (*check)(void*), int32_t from_index) {
-	/*
-	Function to find the first node that meets a certain criteria, but only from a certain address.
-	Arguments:
-		LinkedList* list			-> Linked list to search on.
-		uint8_t (*contition)(void*)	-> Function to be used to check if the node is the wanted one.
-									   If the return is 1, then the index for the node in cause is returned.
-		uint8_t from_index			-> Only search from that index onwards, index included
-	Return:
-		int8_t						-> If positive, index for the node found with the lowest index.
-									   Else, no index found
-	*/
-    NODE* current = list->head;
-    int32_t index = 0;
-    while (current != NULL) {
-        if (index>=from_index && check(current->data) == 1) return index;
-        current = current->next;
-        index++;
-    }
-    return -1;
-}
-
-uint8_t count_occurences(LinkedList* list, int32_t (*check)(void*)) {
-	/*
-	Function to count the numbers of nodes that meet a certain criteria.
-	Arguments:
-		LinkedList* list			-> Linked list to search on.
-		uint8_t (*contition)(void*)	-> Function to be used to check if the node is the wanted one.
-									   If the return is 1, then the node is considered found.
-	Return:
-		uint8_t						-> Number of ocurrences found in the list
-	*/
-    NODE* current = list->head;
-    int32_t count = 0;
-    while (current != NULL) {
-        if (check(current->data) == 1) count++;
+        append_data_to_list(result, current->data);
         current = current->next;
     }
-    return count;
+    current = equal->head;
+    while (current != NULL) {
+        append_data_to_list(result, current->data);
+        current = current->next;
+    }
+    current = greater->head;
+    while (current != NULL) {
+        append_data_to_list(result, current->data);
+        current = current->next;
+    }
+    return result;
+}
+
+void three_way_partition(LinkedList* list, LinkedList* less, LinkedList* equal, LinkedList* greater, int32_t (*compare)(void*, void*)) {
+    /*
+    Used in three-way quick sort. If compare is less than 0, left. If 0, middle. Else right.
+    */
+    NODE* current = list->head;
+    void* pivot = current->data;
+
+    while (current != NULL) {
+        int32_t cmp = compare(current->data, pivot);
+        if (cmp < 0) {
+            append_data_to_list(less, current->data);
+        } else if (cmp == 0) {
+            append_data_to_list(equal, current->data);
+        } else {
+            append_data_to_list(greater, current->data);
+        }
+        current = current->next;
+    }
 }
 
 void sort_list(LinkedList* list, int32_t (*compare)(void*, void*)) {
@@ -430,82 +537,6 @@ void sort_list(LinkedList* list, int32_t (*compare)(void*, void*)) {
     return;
 }
 
-NODE* get_node_at_index(LinkedList* list, int16_t index) {
-	/*
-	Function to retrieve a node at a certain index.
-	Arguments:
-		LinkedList* list	-> Linked list to get the node from.
-		int16_t index		-> Index to get node from
-	Return:
-		NODE* 				-> Address for the node, NULL id index does not exist.
-	*/
-    if (index >= list->size) return NULL; // Index out of bounds
-    NODE* current = list->head;
-    for (int16_t i = 0; i < index; i++) current = current->next;
-    return current;
-}
-
-void print_list(LinkedList* list) {
-	NODE* current = list->head;
-	printf("NULL -> ");
-	while (current != NULL) {
-		printf("%d -> ", *(int32_t*)current->data);
-		current = current->next;
-	}
-	printf("NULL\n");
-}
-
-LinkedList* concatenate(LinkedList* less, LinkedList* equal, LinkedList* greater) {
-    /*
-    Concatenates three linked lists into a single linked list.
-    Arguments:
-        LinkedList* less      -> Pointer to the 'less' linked list.
-        LinkedList* equal     -> Pointer to the 'equal' linked list.
-        LinkedList* greater   -> Pointer to the 'greater' linked list.
-    Return:
-        LinkedList*          -> Pointer to the head of the concatenated linked list.
-                                If all input lists are NULL, it returns NULL.
-    */
-    LinkedList* result = create_linked_list();
-    if (result == NULL) return NULL;
-    NODE* current = less->head;
-    while (current != NULL) {
-        append_data_to_list(result, current->data);
-        current = current->next;
-    }
-    current = equal->head;
-    while (current != NULL) {
-        append_data_to_list(result, current->data);
-        current = current->next;
-    }
-    current = greater->head;
-    while (current != NULL) {
-        append_data_to_list(result, current->data);
-        current = current->next;
-    }
-    return result;
-}
-
-void three_way_partition(LinkedList* list, LinkedList* less, LinkedList* equal, LinkedList* greater, int32_t (*compare)(void*, void*)) {
-    /*
-    Used in three-way quick sort. If compare is less than 0, left. If 0, middle. Else right.
-    */
-    NODE* current = list->head;
-    void* pivot = current->data;
-
-    while (current != NULL) {
-        int32_t cmp = compare(current->data, pivot);
-        if (cmp < 0) {
-            append_data_to_list(less, current->data);
-        } else if (cmp == 0) {
-            append_data_to_list(equal, current->data);
-        } else {
-            append_data_to_list(greater, current->data);
-        }
-        current = current->next;
-    }
-}
-
 void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
  	if (list == NULL || list->head == NULL || list->head->next == NULL) return;
 
@@ -530,6 +561,15 @@ void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
     free(sorted);
 }
 
+void print_list(LinkedList* list) {
+	NODE* current = list->head;
+	printf("NULL -> ");
+	while (current != NULL) {
+		printf("%d -> ", *(int32_t*)current->data);
+		current = current->next;
+	}
+	printf("NULL\n");
+}
 
 
 #ifdef __compile_lists__
