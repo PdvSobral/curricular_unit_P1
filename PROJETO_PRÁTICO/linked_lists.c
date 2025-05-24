@@ -27,7 +27,7 @@ If imported by another file, the following packages should already have been loa
 
 	METHODS AND FUNCTIONS defined:
 
-		LinkedList*  create_linked_list();
+		LinkedList*  create_linked_list		   ();
 		NODE*        create_node               (void *data);
 		NODE*        append_data_to_list       (LinkedList* list, void* data);
 		NODE*        insert_node_at_end        (LinkedList* list, NODE* new_node);

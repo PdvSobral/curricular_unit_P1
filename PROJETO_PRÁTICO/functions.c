@@ -20,7 +20,6 @@ The pdf is present in the same repository as this program.
 #define MAX_INSTRUCTORS 10
 #define MAX_CLASSES 100
 #define CLASS_DURATION 3600 // in seconds
-#define DEBUG 1
 #define CLEAR 1
 
 
