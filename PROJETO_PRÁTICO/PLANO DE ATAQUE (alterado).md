@@ -19,18 +19,18 @@ Livros:
    - Caso o livro esteja indisponível (requisitado), é mantida uma fila de espera com os uIDs dos alunos que solicitaram esse livro.
 
 O programa pretende gestão de livros de uma biblioteca escolar, nomeadamente:
-   - na requisição de livros                                              [Aluno]
-   - na devolução de livros                                               [Bibleotecário]
-   - gestão dos livros no sistema:
-      - Adição de livros                                                  [Bibleotecário]
-      - Remoção de livros (através de uID)                                [Bibleotecário]
-      - Listar livros po uID                                              [Bibleotecário]
-      - Listar livros por ordem alfabética                                [Aluno/Bibleotecário]
-      - Listar apenas livros disponíveis (**Qualquer ordem??**)           [Aluno/Bibleotecário]
-      - Consultar info de um livro (através do uID)                       [Aluno/Bibleotecário]
+   - na requisição de livros &nbsp; &nbsp; [Aluno]<br>
+   - na devolução de livros &nbsp; &nbsp; [Bibleotecário]<br>
+   - gestão dos livros no sistema: <br>
+      - Adição de livros&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;[Bibleotecário]<br>
+      - Remoção de livros (através de uID)&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[Bibleotecário]<br>
+      - Listar livros po uID&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; [Bibleotecário]<br>
+      - Listar livros por ordem alfabética&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;[Aluno/Bibleotecário]<br>
+      - Listar apenas livros disponíveis (**Qualquer ordem??**)&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; [Aluno/Bibleotecário]<br>
+      - Consultar info de um livro (através do uID)&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[Aluno/Bibleotecário]<br>
         incluindo o número de alunos que se encontram na fila de espera.
-      - Consultar histórico de devoluções                                 [Bibleotecário]
-      - Remover do histórico as últimas X devoluções efetuadas            [Bibleotecário]
+      - Consultar histórico de devoluções &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[Bibleotecário]<br>
+      - Remover do histórico as últimas X devoluções efetuadas &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;[Bibleotecário]<br>
         (**Deveria ser das mais antigas, não das mais recentes, diria eu**)
 
 
@@ -39,9 +39,9 @@ Quando um livro é requisitado:
    - uID do aluno é registado como requisitante.
    - Caso o livro esteja indisponível, o ID do aluno é colocado numa fila de espera associada ao livro.
    - Sistema deve registar a operação num ficheiro de texto onde cada linha contém o nome do livro, o ID do aluno e a data da requisição.
-      - Tipo `[+] 2025-05-25 REQ uID_Aluno NomeLivro`?
+      - Tipo `[+] 2025-05-25 14:54 REQ uID_Aluno NomeLivro`?
       - Apenas quando requisita (muda de "dono") ou tmb quando adiciona à queue?
-        - Tipo `[+] 2025-05-25 QUE uID_Aluno NomeLivro`?
+        - Tipo `[+] 2025-05-25 14:54 QUE uID_Aluno NomeLivro`?
 
     
 A devolução de livros é feita exclusivamente pelo bibliotecário (**A requisição tmb deveria ser, então!!**).
@@ -51,9 +51,9 @@ Quando um livro é devolvido:
    - Se existir fila de espera:
       - o livro passa a estar requisitado ao primeiro aluno da fila, atualizando o ID do aluno associado ao livro.
         - E no registo presumo que se tenha de fazer algo tipo:
-          - `[+] 2025-05-25 ARQ uID_Aluno NomeLivro`? (**Auto ReQuest, ou entao um DQU, de DeQUeue **)
+          - `[-] 2025-05-25 14:54 ARQ uID_Aluno NomeLivro`? (**Auto ReQuest, ou entao um DQU, de DeQUeue**)
    - O sistema deve registar a operação num ficheiro de texto onde cada linha contém o nome do livro, o ID do aluno e a data da requisição.
-      - Tipo `[-] 2025-05-25 DEV uID_Aluno NomeLivro`
+      - Tipo `[-] 2025-05-25 14:54 DEV uID_Aluno NomeLivro`
 
 
 A aplicação deve ainda garantir que o seu estado de execução é guardado em ficheiro para que mais tarde possa ser restaurado, garantindo assim continuidade de funcionamento entre utilizações.
@@ -74,7 +74,7 @@ Fatores de valorização:
 
 Grupos de Trabalho:
    - Deverá ser desenvolvido em grupo, constituído por max. três alunos.
-   - A constituição dos grupos deverá ser entregue ao docente da disciplina na aula ou por email.
+   - A constituição dos grupos deverá ser entregue na aula ou por email.
 
 Datas Importantes
    - 15 de junho de 2025: data limite para a submissão final do trabalho prático no moodle. (**Mas no moodle dizia 22...**)
