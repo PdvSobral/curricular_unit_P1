@@ -77,4 +77,4 @@ Grupos de Trabalho:
    - A constituição dos grupos deverá ser entregue na aula ou por email.
 
 Datas Importantes
-   - 15 de junho de 2025: data limite para a submissão final do trabalho prático no moodle. (**Mas no moodle dizia 22...**)
+   - 15 de junho de 2025: data limite para a submissão final do trabalho prático no moodle.
