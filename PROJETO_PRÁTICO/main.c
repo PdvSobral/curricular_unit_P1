@@ -32,50 +32,69 @@ For now, it's just an adaptation in progress of another program.
 #include "linked_lists.c"
 
 
-typedef struct _student{
+typedef struct _account{
 	uint32_t _uid;      // Unique ID, normal unsigned int for now
-	char* name;         // Maybe make it have a fixed lenght?? And be a username, so unique too?
+	char* name[100];    // Name?
 	char* password; 	// Very long string, hopefully, maybe implemente a hash system? Like /etc/passwd? :)
-} STUDENT;
+} ACCOUNT;
 
-typedef struct _biblman{
-	uint32_t _uid;      // Unique ID, normal unsigned int for now
-	char* name;         // Maybe make it have a fixed lenght?? And be a username, so unique too?
-	char* password; 	// Very long string, hopefully, maybe implemente a hash system? Like /etc/passwd? :)
-} BIBLMAN;
 
 typedef struct _book{
-	uint32_t _uid;      				// Unique ID, normal unsigned int for now
-	char* name;         				// Maybe make it have a fixed lenght??
+	uint64_t _uid;      				// Unique ID, ISBN-13
+	char* name[100];         			// Name
 	char* description;  				// Very long string :)
-	uint8_t state;	 					// 1: Ocupied  &&   0: Free
-	STUDENT* requested_by;  			// Alumni that has
-	LinkedList*  queue_for_students;	// Maybe later a file??
+	ACCOUNT* requested_by;  			// Alumni that has it
+	LinkedList* queue_for_students;	// Maybe later a file??
 } BOOK;
-
-typedef struct _self{
-	LinkedList* sudent_list;
-	LinkedList* biblman_list;
-	LinkedList* book_list;
-} SELF;
 
 // Defenition of the menu arrays
 const uint8_t len_main_menu = 3;
 const char main_menu[][CABECALHO_LEN] = {
-	"Student",
-	"Librarian",
+	"Log in as Librarian",
+	"Log in as Student",
 	"Exit"
 };
-const uint8_t len_logreg_menu = 3;
-const char logreg_menu[][CABECALHO_LEN] = {
-	"Login",
-	"Register",
-	"Return to previous menu"
+
+const uint8_t len_student_account_menu = 7;
+const char student_account_menu[][CABECALHO_LEN] = {
+	"Check out book",
+	"List books by ISBN",
+	"List books alphabeticly",
+	"List available books",
+	"Check book information",
+	"Manage account",
+	"Logout"
+};
+const uint8_t len_mng_student_account_menu = 3;
+const char mng_student_account_menu[][CABECALHO_LEN] = {
+	"Change account name",
+	"Change account password",
+	"Return to main menu"
 };
 
+const uint8_t len_biblman_account_menu = 7;
+const char biblman_account_menu[][CABECALHO_LEN] = {
+	"Return book",
+	"List books by ISBN",
+	"List books alphabeticly",
+	"List available books",
+	"Check book information",
+	"Manage system",
+	"Logout"
+};
+const uint8_t len_mng_biblman_account_menu = 7;
+const char mng_biblman_account_menu[][CABECALHO_LEN] = {
+	"Add book",
+	"Remove book",
+	"Check return history",
+	"Remove old return history entries",
+	"Create new account",
+	"Reset password to an account",
+	"Return to main menu"
+};
 
 // MENUS
-void student_account(SELF* self){
+void mng_student_account(){
 	/*
 	Procedimento para criar e correr o menu de gestão dos alunos
 	Argumentos:
@@ -86,17 +105,38 @@ void student_account(SELF* self){
 	uint8_t _escolha_menu;
 	while (1){
 		clear_screen();
-		_escolha_menu = menu("STUDENT ACCOUNT ", CABECALHO_LEN, logreg_menu, len_logreg_menu, 1);
+		_escolha_menu = menu("MANAGE ACCOUNT", CABECALHO_LEN, mng_student_account_menu, len_mng_student_account_menu, 1);
 		if(_escolha_menu==0) break;
 		clear_screen();
 		switch(_escolha_menu){
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
-		sleep(3);
 	}
 	return;
 }
-void biblman_account(SELF* self){
+void student_account(){
+	/*
+	Procedimento para criar e correr o menu de gestão dos alunos
+	Argumentos:
+		SELF* self -> Struct do tipo _self que contém o contexto de chamada.
+	Retorno:
+		Nenhum
+	*/
+	uint8_t _escolha_menu;
+	while (1){
+		clear_screen();
+		_escolha_menu = menu("MAIN MENU ", CABECALHO_LEN, student_account_menu, len_student_account_menu, 1);
+		if(_escolha_menu==0) break;
+		clear_screen();
+		switch(_escolha_menu){
+			case 6: mng_student_account(); break;
+			default: printf("\nFunção ainda não implementada!!\n");
+		}
+	}
+	return;
+}
+
+void mng_biblman_account(){
 	/*
 	Procedimento para criar e correr o menu de gestão dos instrutores
 	Argumentos:
@@ -107,14 +147,37 @@ void biblman_account(SELF* self){
 	uint8_t _escolha_menu;
 	while (1){
 		clear_screen();
-		_escolha_menu = menu("LIBRARIAN ACCOUNT ", CABECALHO_LEN, logreg_menu, len_logreg_menu, 1);
+		_escolha_menu = menu("MANAGE SYSTEM ", CABECALHO_LEN, mng_biblman_account_menu, len_mng_biblman_account_menu, 1);
 		if(_escolha_menu==0) break;
 		switch(_escolha_menu){
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
-		sleep(3);
 	}
 	return;
+}
+void biblman_account(){
+	/*
+	Procedimento para criar e correr o menu de gestão dos instrutores
+	Argumentos:
+		SELF* self -> Struct do tipo _self que contém o contexto de chamada.
+	Retorno:
+		Nenhum
+	*/
+	uint8_t _escolha_menu;
+	while (1){
+		clear_screen();
+		_escolha_menu = menu("MAIN MENU ", CABECALHO_LEN, biblman_account_menu, len_biblman_account_menu, 1);
+		if(_escolha_menu==0) break;
+		switch(_escolha_menu){
+			case 6: mng_biblman_account(); break;
+			default: printf("\nFunção ainda não implementada!!\n");
+		}
+	}
+	return;
+}
+
+uint8_t login(uint8_t account_flag_type){
+	return 0;  // sucessfull
 }
 
 int32_t main(void){
@@ -131,18 +194,14 @@ int32_t main(void){
 	#endif
     fflush(stdin);
 	uint8_t escolha_menu;
-	SELF self;
-	self.sudent_list = create_linked_list();
-	self.biblman_list = create_linked_list();
-	self.book_list = create_linked_list();
 
 	while (1){
 		clear_screen();
 		escolha_menu = menu("PLEASE CHOOSE ACCOUNT TYPE", CABECALHO_LEN, main_menu, len_main_menu, 1);
 		if(escolha_menu==0) break;
 		switch(escolha_menu){
-			case 1: student_account(&self); break;
-			case 2: biblman_account(&self); break;
+			case 1: if(login(0)!=0) printf("INVALID CREDS!"); else biblman_account(); break;
+			case 2: if(login(1)!=0) printf("INVALID CREDS!"); else student_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
 	}
