@@ -38,6 +38,7 @@ If imported by another file, the following packages should already have been loa
 		void         traverse_list             (LinkedList* list, void (*func)(void*));
 		NODE*        get_node_at_index         (LinkedList* list, int16_t index);
 		int32_t      find_node                 (LinkedList* list, int32_t (*check)(void*));
+		int32_t 	 find_node2				   (LinkedList* list, void* to_compare_to, int32_t (*check)(void*, void*));
 		int32_t      find_node_from            (LinkedList* list, int32_t (*check)(void*), int32_t from_index);
 		int32_t      count_occurences          (LinkedList* list, int32_t (*check)(void*));
 		uint8_t      remove_node_at_index      (LinkedList* list, int16_t index, void (*data_handler)(void*));
@@ -46,7 +47,9 @@ If imported by another file, the following packages should already have been loa
 		void         three_way_partition       (LinkedList* list, LinkedList* less, LinkedList* equal, LinkedList* greater, int32_t (*compare)(void*, void*));
 		void         sort_list                 (LinkedList* list, int32_t (*compare)(void*, void*));
 		void         three_way_quick_sort      (LinkedList* list, int32_t (*compare)(void*, void*));
-		void         print_list                (LinkedList* list);
+
+DEBUG FUNCTIONS! DO NOT USE WITHOUT CHECKING THE CODE:
+		void         print_list                (LinkedList* list); ONLY FOR int32_t malloced DATA
 
 */
 
@@ -308,6 +311,27 @@ int32_t find_node(LinkedList* list, int32_t (*check)(void*)) {
     int32_t index = 0;
     while (current != NULL) {
         if (check(current->data) == 1) return index;
+        current = current->next;
+        index++;
+    }
+    return -1;
+}
+
+int32_t find_node2(LinkedList* list, void* to_compare_to, int32_t (*check)(void*, void*)) {
+	/*
+	Function to find the first node that meets a certain criteria.
+	Arguments:
+		LinkedList* list			-> Linked list to search on.
+		uint8_t (*contition)(void*)	-> Function to be used to check if the node is the wanted one.
+									   If the return is 1, then the index for the node in cause is returned.
+	Return:
+		int8_t						-> If positive, index for the node found with the lowest index.
+									   Else, no index found
+	*/
+    NODE* current = list->head;
+    int32_t index = 0;
+    while (current != NULL) {
+        if (check(current->data, to_compare_to) == 1) return index;
         current = current->next;
         index++;
     }

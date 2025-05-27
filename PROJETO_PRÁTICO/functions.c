@@ -16,14 +16,7 @@ The pdf is present in the same repository as this program.
 
 // Especificações do cliente
 #define CABECALHO_LEN 50
-#define MAX_ALUMNI 30
-#define MAX_INSTRUCTORS 10
-#define MAX_CLASSES 100
-#define CLASS_DURATION 3600 // in seconds
 #define CLEAR 1
-
-
-#define AGGRESSIVE
 
 
 // Especificações do programador

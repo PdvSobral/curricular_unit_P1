@@ -30,7 +30,10 @@ For now, it's just an adaptation in progress of another program.
 
 #include "functions.c"
 #include "linked_lists.c"
+#include "database_helper.c"
 
+#define AGGRESSIVE
+const char* DATABASE = "./assets/sys_shadow.csv";
 
 typedef struct _account{
 	uint32_t _uid;      // Unique ID, normal unsigned int for now
@@ -178,6 +181,9 @@ void biblman_account(){
 	return;
 }
 
+int32_t compare_ids(void* a, void* b){
+	if (strcmp((char*) a, (char*) b)==0) return 1; else return 0;
+}
 uint8_t login(uint8_t account_flag_type){
 	char buffer[26];
 	uint8_t flag=0;
@@ -186,8 +192,13 @@ uint8_t login(uint8_t account_flag_type){
 		printf("Account ID: ");
 		read_n_chars(6, buffer);
 		account_id = (int64_t) str_to_int64_t_flag(buffer, &flag);
-		if (flag==1 && account_id <= 99999){
-			break; // TODO: make the check also
+		if (flag==1 && account_id <= 99999) {
+			LinkedList* users_ids = get_users_ids(DATABASE);
+			if (find_node2(users_ids, buffer, compare_ids)>=0){
+				delete_linked_list(users_ids, free);
+				break;
+			}
+			delete_linked_list(users_ids, free);
 		}
 		printf("Invalid ID for %s account!\n", account_flag_type == 0 ? "librarian" : "student");
 		pause_();
