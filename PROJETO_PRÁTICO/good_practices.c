@@ -13,7 +13,7 @@ Good practices that I like to adhere to.
 
 // Makes so that the said macros/labels are not allowed in the program, raising errors
 // Might be usefull for debugging
-#pragma GCC poison int unsigned short strlen size_t
+#pragma GCC poison int unsigned short strlen size_t pause
 
 #ifndef function_strlen2
 #define function_strlen2

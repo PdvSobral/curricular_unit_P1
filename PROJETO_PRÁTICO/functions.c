@@ -289,6 +289,13 @@ int8_t strIsNum(char *str){
     return 0;
 }
 
+void pause_() {
+	// TODO: It might break in some places, programers beware!
+    printf("Press any key to continue . . . ");
+	char command[9] = "%1[^\n]";
+	scanf(command, command);
+	flush_stdin();
+}
 
 void cabecalho(const char msg[], uint8_t len_cabecalho){
 	/*

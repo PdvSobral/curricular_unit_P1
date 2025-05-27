@@ -38,13 +38,13 @@ typedef struct _account{
 	char* password; 	// Very long string, hopefully, maybe implemente a hash system? Like /etc/passwd? :)
 } ACCOUNT;
 
-
 typedef struct _book{
 	uint64_t _uid;      				// Unique ID, ISBN-13
 	char* name[100];         			// Name
+	uint8_t quantity;					// How many books are there in the bibl system
 	char* description;  				// Very long string :)
-	ACCOUNT* requested_by;  			// Alumni that has it
-	LinkedList* queue_for_students;	// Maybe later a file??
+	LinkedList* requested_by;  			// Contains a list of users that currently have the book
+	LinkedList* queue_for_students;	    // Maybe later a file??
 } BOOK;
 
 // Defenition of the menu arrays
@@ -148,7 +148,9 @@ void mng_biblman_account(){
 	while (1){
 		clear_screen();
 		_escolha_menu = menu("MANAGE SYSTEM ", CABECALHO_LEN, mng_biblman_account_menu, len_mng_biblman_account_menu, 1);
-		if(_escolha_menu==0) break;
+		if(_escolha_menu==0){
+			break;
+		}
 		switch(_escolha_menu){
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
@@ -177,6 +179,33 @@ void biblman_account(){
 }
 
 uint8_t login(uint8_t account_flag_type){
+	char buffer[26];
+	uint8_t flag=0;
+	uint32_t account_id;
+	while (1){
+		printf("Account ID: ");
+		read_n_chars(6, buffer);
+		account_id = (int64_t) str_to_int64_t_flag(buffer, &flag);
+		if (flag==1 && account_id <= 99999){
+			break; // TODO: make the check also
+		}
+		printf("Invalid ID for %s account!\n", account_flag_type == 0 ? "librarian" : "student");
+		pause_();
+		return 1;  // TODO: Adicionar confirmação se quer reintroduzir ou voltar ao menu inicial
+	}
+	while (1){
+		printf("Password: ");
+		read_n_chars(25, buffer);
+		if (strlen2(buffer) <= 24){
+			break; // TODO: also make the check
+		}
+		printf("Invalid password!\n");
+		pause_();
+		return 1;  // TODO: Adicionar confirmação se quer reintroduzir ou voltar ao menu inicial
+	}
+	// TODO: De alguma forma registar a conta "logada" atualmente
+	printf("Login Sucessfull as %s!\n", "TO_GET_NAME");
+	pause_();
 	return 0;  // sucessfull
 }
 
@@ -200,8 +229,8 @@ int32_t main(void){
 		escolha_menu = menu("PLEASE CHOOSE ACCOUNT TYPE", CABECALHO_LEN, main_menu, len_main_menu, 1);
 		if(escolha_menu==0) break;
 		switch(escolha_menu){
-			case 1: if(login(0)!=0) printf("INVALID CREDS!"); else biblman_account(); break;
-			case 2: if(login(1)!=0) printf("INVALID CREDS!"); else student_account(); break;
+			case 1: if(login(0)==0) biblman_account(); break;
+			case 2: if(login(1)==0) student_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
 	}
