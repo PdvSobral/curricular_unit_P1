@@ -96,33 +96,41 @@ ACCOUNT* get_user_with_id(const char* database_name, const char* id){
 		if (next_is_valid == 1){
 			to_return = (ACCOUNT*) malloc(sizeof(ACCOUNT));
 			buffer[5] = 0x00;
+			printf("Debug: Comparing buffer with id: %s vs %s\n", buffer, id);
 			if (strcmp((char*) buffer, (char*) id) == 0){
 				to_return->uid = str_to_int64_t((char*) buffer);
+				printf("Debug: UID found: %u\n", to_return->uid);
 				fread(buffer, 1, 33, file);
 				buffer[33] = 0x00;
-				strcpy((char*) to_return->password, (char*) buffer+1);
+				strcpy((char*) to_return->password, (char*) buffer + 1);
+				printf("Debug: Password read: %s\n", to_return->password);
 				fread(buffer, 1, 3, file);
-				to_return->type = buffer[1]-0x30;
-				to_return->name_offset = (uint64_t) ftell(file);  // depois fseek(file, currentPosition, SEEK_SET) e ler até \n
+				to_return->type = buffer[1] - 0x30;
+				printf("Debug: Account type: %d\n", to_return->type);
+				to_return->name_offset = (uint64_t) ftell(file);
+				printf("Debug: Name offset: %u\n", to_return->name_offset);
 				fclose(file);
 				return to_return;
 			}
+			fseek(file, 36, SEEK_CUR);
 			next_is_valid = 0;
 		}
+		printf("BUFFER: %s\n", buffer);
 		to_read = 5;
 		// Check for end of line (newline character) or end of file
-		for (uint8_t i=0; i < bytesRead; i++){
+		for (uint8_t i = 0; i < bytesRead; i++) {
 			if (buffer[i] == '\n') {
-				to_read = i+1;
-				next_is_valid=1;
-				strcpy((char*) buffer, (char*) buffer+i+1);
+				printf("Found \\n on index: %u\n", i);
+				to_read = i + 1;
+				next_is_valid = 1;
+				strcpy((char*) buffer, (char*) buffer + to_read);
 				break;
 			}
 		}
 	}
 	// Close the file
 	fclose(file);
-	return to_return;
+	return NULL;
 }
 
 #ifdef __database_helper__
@@ -136,7 +144,8 @@ ACCOUNT* get_user_with_id(const char* database_name, const char* id){
 	int main() {
 		const char* filename = "./assets/sys_shadow.csv";
 		ACCOUNT* my_user = get_user_with_id(filename, "29659");
-		print_account_data(my_user);
+		if (my_user == NULL) printf("NO USER FOUND!\n");
+		else print_account_data(my_user);
 		free(my_user);
 	}
 #endif
