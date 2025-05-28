@@ -25,27 +25,17 @@ This file contains the functions developed to abstract the main program to how t
 
 LinkedList* get_users_ids(const char* database_name){
 	FILE* file;
-	uint8_t buffer[6]; // 5 + \0
+	uint8_t buffer[6];
 	uint8_t to_read=5;
 	uint8_t bytesRead;
 	LinkedList* to_return = create_linked_list();
 	char* to_hold_pointer;
 	uint8_t next_is_valid=1;
-
-	// Open the file for reading bytes (I'm getting chars, so it's the same)
 	file = fopen(database_name, "rb");
-	if (file == NULL) {
-		perror("Error opening file");
-		return NULL;
-	}
-
+	if (file == NULL) return NULL;
 	while (1) {
-		// Read up to 5 bytes from the file
 		bytesRead = fread(buffer+5-to_read, 1, to_read, file);
-		// If no bytes were read, break the loop (end of file)
 		if (bytesRead == 0) break;
-
-		// Print the bytes read if they are what we want (later make a LinkedList):
 		if (next_is_valid == 1){
 			to_hold_pointer = (char*) malloc(sizeof(buffer));
 			buffer[5] = 0x00;
@@ -53,9 +43,7 @@ LinkedList* get_users_ids(const char* database_name){
 			append_data_to_list(to_return, to_hold_pointer);
 			next_is_valid=0;
 		}
-
 		to_read = 5;
-		// Check for end of line (newline character) or end of file
 		for (uint8_t i=0; i < bytesRead; i++){
 			if (buffer[i] == '\n') {
 				to_read = i+1;
@@ -65,8 +53,6 @@ LinkedList* get_users_ids(const char* database_name){
 			}
 		}
 	}
-
-	// Close the file
 	fclose(file);
 	return to_return;
 }
@@ -111,7 +97,6 @@ ACCOUNT* get_user_with_id(const char* database_name, const char* id){
 			}
 		}
 	}
-	// Close the file
 	fclose(file);
 	return NULL;
 }
@@ -126,7 +111,7 @@ ACCOUNT* get_user_with_id(const char* database_name, const char* id){
 
 	int main() {
 		const char* filename = "./assets/sys_shadow.csv";
-		ACCOUNT* my_user = get_user_with_id(filename, "29659");
+		ACCOUNT* my_user = get_user_with_id(filename, "33641");
 		if (my_user == NULL) printf("NO USER FOUND!\n");
 		else print_account_data(my_user);
 		free(my_user);
