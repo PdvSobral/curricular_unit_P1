@@ -1,5 +1,5 @@
 /* Encoding: UTF-8
-@Authors: Pedro Sobral (33641), Alexandre Domingos (27641)
+@Authors: Pedro Sobral (33641)
 @Date: 29/05/2025
 @Links: Project github repository -> https://github.com/PdvSobral/curricular_unit_P1
 
@@ -13,6 +13,17 @@ The pdf is present in the same repository as this program.
 // Makes so that this file is only included once
 #pragma once
 #endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <ctype.h>
+#include <stdint.h>
+#include <termios.h>    // -> Disabl_ctrl_d (IN) functions.c
+#include <signal.h>		// -> To remap CTRL+C
+#include <string.h>		// strcmp, strlens
+#include <unistd.h>		// sleep, STDIN_FILENO
+
 
 // Especificações do cliente
 #define CABECALHO_LEN 50

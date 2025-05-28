@@ -1,5 +1,5 @@
 /* Encoding: UTF-8
-@Authors: Pedro Sobral (33641), Alexandre Domingos (27641)
+@Authors: Pedro Sobral (33641)
 @Date: 29/05/2025
 @Links: Project github repository -> https://github.com/PdvSobral/curricular_unit_P1
 
@@ -8,17 +8,20 @@ This file contains the functions developed to abstract the main program to how t
 // Makes so that if "#define __main__" is not somewhere before this program is compiled an error ocurs, stopping compilation
 #ifndef __main__
 	#pragma GCC warning "This code ('database_helper.c') is not meant to be compiled directly. Be sure you know what you are doing."
-	#include <stdlib.h>		// malloc, alloc (sem ela tmb tive algumas instabilidades com o uso de unsigneds)
-	#include <stdint.h>		// uint8_t
-	#include <stdio.h>		// printf
-	#include <string.h>		// strcpy
 	#define __main__
 	#define __database_helper__
-	#include "linked_lists.c"
 #else
 	// Makes so that this file is only included once
 	#pragma once
 #endif
+
+#include <stdlib.h>			// malloc, alloc (sem ela tmb tive algumas instabilidades com o uso de unsigneds)
+#include <stdint.h>			// uint8_t
+#include <stdio.h>	    	// printf
+#include <string.h>			// strcpy
+#include "linked_lists.c"
+#include "typedefs.c"
+#include "functions.c"
 
 LinkedList* get_users_ids(const char* database_name){
 	FILE* file;
@@ -58,7 +61,7 @@ LinkedList* get_users_ids(const char* database_name){
 				to_read = i+1;
 				next_is_valid=1;
 				strcpy((char*) buffer, (char*) buffer+i+1);
-				//break;
+				break;
 			}
 		}
 	}
@@ -68,15 +71,72 @@ LinkedList* get_users_ids(const char* database_name){
 	return to_return;
 }
 
+ACCOUNT* get_user_with_id(const char* database_name, const char* id){
+	FILE* file;
+	uint8_t buffer[34];
+	uint8_t to_read=5;
+	uint8_t bytesRead;
+	ACCOUNT* to_return = NULL;
+	uint8_t next_is_valid=1;
+
+	// Open the file for reading bytes (I'm getting chars, so it's the same)
+	file = fopen(database_name, "rb");
+	if (file == NULL) {
+		perror("Error opening file");
+		return NULL;
+	}
+
+	while (1) {
+		// Read up to 5 bytes from the file
+		bytesRead = fread(buffer+5-to_read, 1, to_read, file);
+		// If no bytes were read, break the loop (end of file)
+		if (bytesRead == 0) break;
+
+		// Print the bytes read if they are what we want (later make a LinkedList):
+		if (next_is_valid == 1){
+			to_return = (ACCOUNT*) malloc(sizeof(ACCOUNT));
+			buffer[5] = 0x00;
+			if (strcmp((char*) buffer, (char*) id) == 0){
+				to_return->uid = str_to_int64_t((char*) buffer);
+				fread(buffer, 1, 33, file);
+				buffer[33] = 0x00;
+				strcpy((char*) to_return->password, (char*) buffer+1);
+				fread(buffer, 1, 3, file);
+				to_return->type = buffer[1]-0x30;
+				to_return->name_offset = (uint64_t) ftell(file);  // depois fseek(file, currentPosition, SEEK_SET) e ler até \n
+				fclose(file);
+				return to_return;
+			}
+			next_is_valid = 0;
+		}
+		to_read = 5;
+		// Check for end of line (newline character) or end of file
+		for (uint8_t i=0; i < bytesRead; i++){
+			if (buffer[i] == '\n') {
+				to_read = i+1;
+				next_is_valid=1;
+				strcpy((char*) buffer, (char*) buffer+i+1);
+				break;
+			}
+		}
+	}
+	// Close the file
+	fclose(file);
+	return to_return;
+}
+
 #ifdef __database_helper__
-	void print_data(void* data){
-		printf("%s\n", (char*) data);
+	void print_account_data(ACCOUNT* data){
+		printf("uID: %d\n", data->uid);
+		printf("MD5: %s\n", data->password);
+		printf("Type: %s\n", data->type==1?"Librarian":"Student");
+		printf("Name Offset: %d\n", data->name_offset);
 	}
 
 	int main() {
 		const char* filename = "./assets/sys_shadow.csv";
-		LinkedList* all_ids = get_users_ids(filename);
-		traverse_list(all_ids, print_data);
-		delete_linked_list(all_ids, free);
+		ACCOUNT* my_user = get_user_with_id(filename, "29659");
+		print_account_data(my_user);
+		free(my_user);
 	}
 #endif

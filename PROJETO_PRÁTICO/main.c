@@ -9,11 +9,15 @@ For now, it's just an adaptation in progress of another program.
 */
 #define __main__	// because of it is the first, the other will not compile if not this line
 
-#include <unistd.h>		// sleep
-#include <time.h>		// tm, localtimeb
-#include <ctype.h> 		// isdigit
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <ctype.h>
+#include <stdint.h>
 #include <termios.h>    // -> Disabl_ctrl_d (IN) functions.c
 #include <signal.h>		// -> To remap CTRL+C
+#include <string.h>		// strcmp, strlens
+#include <unistd.h>		// sleep, STDIN_FILENO
 
 #ifndef psystem
 	#include <stdio.h>		// printf, scanf
@@ -31,24 +35,10 @@ For now, it's just an adaptation in progress of another program.
 #include "functions.c"
 #include "linked_lists.c"
 #include "database_helper.c"
+#include "typedefs.c"
 
 #define AGGRESSIVE
 const char* DATABASE = "./assets/sys_shadow.csv";
-
-typedef struct _account{
-	uint32_t _uid;      // Unique ID, normal unsigned int for now
-	char* name[100];    // Name?
-	char* password; 	// Very long string, hopefully, maybe implemente a hash system? Like /etc/passwd? :)
-} ACCOUNT;
-
-typedef struct _book{
-	uint64_t _uid;      				// Unique ID, ISBN-13
-	char* name[100];         			// Name
-	uint8_t quantity;					// How many books are there in the bibl system
-	char* description;  				// Very long string :)
-	LinkedList* requested_by;  			// Contains a list of users that currently have the book
-	LinkedList* queue_for_students;	    // Maybe later a file??
-} BOOK;
 
 // Defenition of the menu arrays
 const uint8_t len_main_menu = 3;
