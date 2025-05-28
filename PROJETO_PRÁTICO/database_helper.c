@@ -78,52 +78,35 @@ ACCOUNT* get_user_with_id(const char* database_name, const char* id){
 	uint8_t bytesRead;
 	ACCOUNT* to_return = NULL;
 	uint8_t next_is_valid=1;
-
-	// Open the file for reading bytes (I'm getting chars, so it's the same)
 	file = fopen(database_name, "rb");
-	if (file == NULL) {
-		perror("Error opening file");
-		return NULL;
-	}
-
+	if (file == NULL) return NULL;
 	while (1) {
-		// Read up to 5 bytes from the file
 		bytesRead = fread(buffer+5-to_read, 1, to_read, file);
-		// If no bytes were read, break the loop (end of file)
 		if (bytesRead == 0) break;
-
-		// Print the bytes read if they are what we want (later make a LinkedList):
 		if (next_is_valid == 1){
 			to_return = (ACCOUNT*) malloc(sizeof(ACCOUNT));
 			buffer[5] = 0x00;
-			printf("Debug: Comparing buffer with id: %s vs %s\n", buffer, id);
 			if (strcmp((char*) buffer, (char*) id) == 0){
 				to_return->uid = str_to_int64_t((char*) buffer);
-				printf("Debug: UID found: %u\n", to_return->uid);
 				fread(buffer, 1, 33, file);
 				buffer[33] = 0x00;
 				strcpy((char*) to_return->password, (char*) buffer + 1);
-				printf("Debug: Password read: %s\n", to_return->password);
 				fread(buffer, 1, 3, file);
 				to_return->type = buffer[1] - 0x30;
-				printf("Debug: Account type: %d\n", to_return->type);
 				to_return->name_offset = (uint64_t) ftell(file);
-				printf("Debug: Name offset: %u\n", to_return->name_offset);
 				fclose(file);
 				return to_return;
 			}
 			fseek(file, 36, SEEK_CUR);
 			next_is_valid = 0;
 		}
-		printf("BUFFER: %s\n", buffer);
 		to_read = 5;
-		// Check for end of line (newline character) or end of file
 		for (uint8_t i = 0; i < bytesRead; i++) {
 			if (buffer[i] == '\n') {
-				printf("Found \\n on index: %u\n", i);
 				to_read = i + 1;
 				next_is_valid = 1;
-				strcpy((char*) buffer, (char*) buffer + to_read);
+				strcpy((char*) buffer+7, (char*) buffer+to_read);
+				strcpy((char*) buffer, (char*) buffer+7);
 				break;
 			}
 		}
