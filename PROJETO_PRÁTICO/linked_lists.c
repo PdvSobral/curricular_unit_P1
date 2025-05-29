@@ -1,5 +1,5 @@
 /* Encoding: UTF-8
-@Authors: Pedro Sobral (33641), Alexandre Domingos (27641)
+@Authors: Pedro Sobral (33641)
 @Date: 29/05/2025
 @Links: Project github repository -> https://github.com/PdvSobral/curricular_unit_P1
 

@@ -36,6 +36,7 @@ For now, it's just an adaptation in progress of another program.
 #include "linked_lists.c"
 #include "database_helper.c"
 #include "typedefs.c"
+#include "md5.c"
 
 #define AGGRESSIVE
 const char* DATABASE = "./assets/sys_shadow.csv";
