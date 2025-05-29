@@ -13,13 +13,14 @@ Adapted by Pedro Sobral (33541) in 2025-05-28.
 #include <stdlib.h>
 
 typedef struct _md5context{
-    uint64_t size;        // Size of input in bytes
-    uint32_t buffer[4];	  // Current accumulation of hash
-    uint8_t  input[64];   // Input to be used in the next step
-    uint8_t  digest[16];  // Result of algorithm
+    uint64_t size;        // Size of input in bytes             | Number of valid bytes currently in self.input
+    uint8_t  input[64];   // Input to be used in the next step  | Bytes to be used for the algorithm
+	uint32_t buffer[4];	  // Current accumulation of hash       | Simulate 4 32bit register in a processor
+    uint8_t  digest[16];  // Result of algorithm                | Result of the algorithm
 } MD5Context;
 
-// Constants for the MD5 algorithm
+// ----------------- Constants for the MD5 algorithm -----------------
+// Starting values for the "registers"
 #define A 0x67452301
 #define B 0xefcdab89
 #define C 0x98badcfe
@@ -46,7 +47,7 @@ static uint32_t K[] = {0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
                        0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
                        0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391};
 
-// Padding used to make the size (in bits) of the input congruent to 448 mod 512
+// Array used for padding messages if needed
 static uint8_t PADDING[] = {0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -56,40 +57,54 @@ static uint8_t PADDING[] = {0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
+// ---------------------- Functions and Methods ----------------------
 // Bit-manipulation methods needed for the MD5 algorithm
 #define F(X, Y, Z) ((X & Y) | (~X & Z))
 #define G(X, Y, Z) ((X & Z) | (Y & ~Z))
 #define H(X, Y, Z) (X ^ Y ^ Z)
 #define I(X, Y, Z) (Y ^ (X | ~Z))
 
-// Rotates a 32-bit word left by n bits
 uint32_t rotateLeft(uint32_t x, uint32_t n){
+	/*
+	Original: Rotates a 32-bit word left by n bits
+	Testing:
+		n = 10  x = 0b00011101001011000101001101000100
+
+		x << 10  |  0b10110001010011010001000000000000
+		x >> 22  |  0b00000000000000000000000001110100
+		-----------------------------------------------
+		a or b   |  0b10110001010011010001000001110100
+	*/
     return (x << n) | (x >> (32 - n));
 }
 
-
-// Initialize a context
-void md5Init(MD5Context *ctx){
+MD5Context* md5Init(){
+	/*
+	Initialize a "context" to the needed begginer values for MD5 hashing.
+	In a processor, that would be the registers to be used.
+	So basicly a virtual environment of a processor for MD5 hashing.
+	Returns that "VM".
+	*/
+	MD5Context* ctx = (MD5Context*) malloc(sizeof(MD5Context));
     ctx->size = (uint64_t)0;
-
     ctx->buffer[0] = (uint32_t)A;
     ctx->buffer[1] = (uint32_t)B;
     ctx->buffer[2] = (uint32_t)C;
     ctx->buffer[3] = (uint32_t)D;
+    return ctx;
 }
 
-// Step on 512 bits of input with the main MD5 algorithm.
-void md5Step(uint32_t *buffer, uint32_t *input){
+void md5Step(uint32_t* buffer, uint32_t* input[512]){
+	/*
+	Step on 512 bits of input with the main MD5 algorithm.
+	*/
     uint32_t AA = buffer[0];
     uint32_t BB = buffer[1];
     uint32_t CC = buffer[2];
     uint32_t DD = buffer[3];
-
     uint32_t E;
-
     uint8_t j;
-
-    for(uint8_t i = 0; i < 64; ++i){
+    for(uint8_t i = 0; i < 64; i++){
         switch(i / 16){
             case 0:
                 E = F(BB, CC, DD);
@@ -108,31 +123,28 @@ void md5Step(uint32_t *buffer, uint32_t *input){
                 j = (i * 7) % 16;
                 break;
         }
-
         uint32_t temp = DD;
         DD = CC;
         CC = BB;
         BB = BB + rotateLeft(AA + E + K[i] + input[j], S[i]);
         AA = temp;
     }
-
     buffer[0] += AA;
     buffer[1] += BB;
     buffer[2] += CC;
     buffer[3] += DD;
 }
 
-/*
- * Add some amount of input to the context
- *
- * If the input fills out a block of 512 bits, apply the algorithm (md5Step)
- * and save the result in the buffer. Also updates the overall size.
- */
-void md5Update(MD5Context *ctx, uint8_t *input_buffer, size_t input_len){
+void md5Update(MD5Context* ctx, uint8_t* input_buffer, size_t input_len){
+	/*
+	Add some amount of input to the context
+
+	If the input fills out a block of 512 bits, apply the algorithm (md5Step)
+	and save the result in the buffer. Also updates the overall size.
+	*/
     uint32_t input[16];
     uint8_t offset = ctx->size % 64;
     ctx->size += (uint64_t)input_len;
-
     // Copy each byte in input_buffer into the next space in our context input
     for(uint8_t i = 0; i < input_len; ++i){
         ctx->input[offset++] = (uint8_t)*(input_buffer + i);
@@ -157,19 +169,17 @@ void md5Update(MD5Context *ctx, uint8_t *input_buffer, size_t input_len){
     }
 }
 
-/*
- * Pad the current input to get to 448 bytes, append the size in bits to the very end,
- * and save the result of the final iteration into digest.
- */
-void md5Finalize(MD5Context *ctx){
+void md5Finalize(MD5Context* ctx){
+	/*
+	Pad the current input to get to 448 bytes, append the size in bits to the very end,
+	and save the result of the final iteration into digest.
+	*/
     uint32_t input[16];
     uint8_t offset = ctx->size % 64;
     uint8_t padding_length = offset < 56 ? 56 - offset : (56 + 64) - offset;
-
     // Fill in the padding and undo the changes to size that resulted from the update
     md5Update(ctx, PADDING, padding_length);
     ctx->size -= (uint64_t)padding_length;
-
     // Do a final update (internal to this function)
     // Last two 32-bit words are the two halves of the size (converted from bytes to bits)
     for(uint8_t j = 0; j < 14; ++j){
@@ -180,9 +190,7 @@ void md5Finalize(MD5Context *ctx){
     }
     input[14] = (uint32_t)(ctx->size * 8);
     input[15] = (uint32_t)((ctx->size * 8) >> 32);
-
     md5Step(ctx->buffer, input);
-
     // Move the result into digest (convert from little-endian)
     for(uint8_t i = 0; i < 4; ++i){
         ctx->digest[(i * 4) + 0] = (uint8_t)((ctx->buffer[i] & 0x000000FF));
@@ -192,33 +200,32 @@ void md5Finalize(MD5Context *ctx){
     }
 }
 
-/*
- * Functions that run the algorithm on the provided input and put the digest into result.
- * result should be able to store 16 bytes.
- */
-void md5String(char *input, uint8_t *result){
-    MD5Context ctx;
-    md5Init(&ctx);
-    md5Update(&ctx, (uint8_t *)input, strlen(input));
-    md5Finalize(&ctx);
 
-    memcpy(result, ctx.digest, 16);
+// -------------------- BASE FUNCTIONS TO BE CALLED --------------------
+void md5String(char* input, uint8_t result[16]){
+	/*
+	Create an MD5 hash for a given string
+	*/
+    MD5Context* ctx = md5Init();
+    md5Update(ctx, (uint8_t*) input, strlen(input));
+    md5Finalize(ctx);
+    memcpy(result, ctx->digest, 16);
 }
 
-void md5File(FILE *file, uint8_t *result){
-    char *input_buffer = malloc(1024);
-    size_t input_size = 0;
-
-    MD5Context ctx;
-    md5Init(&ctx);
-
-    while((input_size = fread(input_buffer, 1, 1024, file)) > 0){
-        md5Update(&ctx, (uint8_t *)input_buffer, input_size);
+void md5File(FILE* file, uint8_t result[16]){
+	/*
+	Create an MD5 hash for the contents of a file
+	Read chunks of up to 1024, and MD5 takes chunks of 512, so two chuncks at a time.
+	*/
+    char* input_buffer = (char*) malloc(1024);
+    uint16_t input_size;
+    MD5Context* ctx = md5Init();
+    while(1){
+    	input_size = fread(input_buffer, 1, 1024, file);
+    	if (input_size <= 0) break;
+    	md5Update(ctx, (uint8_t*) input_buffer, input_size);
     }
-
-    md5Finalize(&ctx);
-
+    md5Finalize(ctx);
     free(input_buffer);
-
-    memcpy(result, ctx.digest, 16);
+    memcpy(result, ctx->digest, 16);
 }

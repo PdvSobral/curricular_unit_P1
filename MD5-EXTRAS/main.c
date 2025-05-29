@@ -35,6 +35,7 @@ int main(){
 	md5String(to_hash, result);
 	save_hash_in_hex_manual(result, str_hash);
 	printf("Hash: %s\n", str_hash);
+	printf("Actu: 5f4dcc3b5aa765d61d8327deb882cf99\n");
     /*
     md5File(stdin, result);
     print_hash_in_hex(result);
