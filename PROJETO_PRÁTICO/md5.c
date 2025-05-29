@@ -279,6 +279,7 @@ void hash_md5(char* to_hash, char hashed[33]){
 	md5String(to_hash, result);
 	save_hash_in_hex_manual(result, hashed);
 }
+
 #ifdef __md5_c__
 	int base(){
 		char* to_hash = "pássword";
