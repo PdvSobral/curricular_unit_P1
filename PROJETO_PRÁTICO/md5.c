@@ -224,7 +224,9 @@ void md5String(char* input, uint8_t result[16]){
 	Create an MD5 hash for a given string
 	*/
     MD5Context* ctx = md5Init();
-    md5Update(ctx, (uint8_t*) input, strlen2(input));
+    uint16_t length=0;
+    while (input[length] != '\0') length++;
+	md5Update(ctx, (uint8_t*) input, (uint16_t) length);
     md5Finalize(ctx);
     memcpy(result, ctx->digest, 16);
 }
@@ -272,8 +274,13 @@ void save_hash_in_hex_manual(uint8_t hash_start[16], char str_to_save_hash_to[33
     str_to_save_hash_to[32] = '\0';
 }
 
+void hash_md5(char* to_hash, char hashed[33]){
+	uint8_t result[16];
+	md5String(to_hash, result);
+	save_hash_in_hex_manual(result, hashed);
+}
 #ifdef __md5_c__
-	int main(){
+	int base(){
 		char* to_hash = "pássword";
 		char str_hash[33];  // 32 + 0x00
 		uint8_t result[16];
@@ -286,6 +293,15 @@ void save_hash_in_hex_manual(uint8_t hash_start[16], char str_to_save_hash_to[33
 		md5File(stdin, result);
 		print_hash_in_hex(result);
 		*/
+		return 0;
+	}
+
+	int main(){
+		char* to_hash = "What's going on?";
+		char str_hash[33];  // 32 + 0x00
+		hash_md5(to_hash, str_hash);
+		printf("To Hash -> %s\n", to_hash);
+		printf("Hashed  -> %s\n", str_hash);
 		return 0;
 	}
 #endif
