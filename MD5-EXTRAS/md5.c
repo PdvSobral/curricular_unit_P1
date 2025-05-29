@@ -94,7 +94,7 @@ MD5Context* md5Init(){
     return ctx;
 }
 
-void md5Step(uint32_t* buffer, uint32_t* input[512]){
+void md5Step(uint32_t* buffer, uint32_t* input){
 	/*
 	Step on 512 bits of input with the main MD5 algorithm.
 	*/
