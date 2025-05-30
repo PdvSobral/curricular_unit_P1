@@ -243,7 +243,7 @@ int64_t str_to_int64_t(char *pointer_to_str){
 		char_to_evaluate = *(pointer_to_str);
 		if(char_to_evaluate == 0x00) break;
 		if(char_to_evaluate < 0x30) break;
-		if(char_to_evaluate > 0x3A) break;
+		if(char_to_evaluate > 0x39) break;
 		if(_buffer==-1) _buffer=0;
 		_buffer*=10;
 		_buffer+=(char_to_evaluate - 0x30);
@@ -266,7 +266,7 @@ int64_t str_to_int64_t_flag(char *pointer_to_str, uint8_t *is_numeric){
 		char_to_evaluate = *(pointer_to_str);
 		if(char_to_evaluate == 0x00) {*is_numeric=1; break;};
 		if(char_to_evaluate < 0x30) {*is_numeric=0; break;};
-		if(char_to_evaluate > 0x3A) {*is_numeric=0; break;};
+		if(char_to_evaluate > 0x39) {*is_numeric=0; break;};
 		if(_buffer==-1) _buffer=0;
 		_buffer*=10;
 		_buffer+=(char_to_evaluate - 0x30);
