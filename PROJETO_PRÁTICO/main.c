@@ -85,6 +85,13 @@ const char mng_biblman_account_menu[][CABECALHO_LEN] = {
 };
 
 // FUNÇÕES
+void print_account_data(ACCOUNT* data){
+		printf("uID: %d\n", data->uid);
+		printf("MD5: %s\n", data->password);
+		printf("Type: %s\n", data->type==1?"Librarian":"Student");
+		printf("Name Offset: %d\n", data->name_offset);
+	}
+
 uint8_t login(uint8_t account_flag_type){
 	char buffer[26];
 	uint8_t flag=0;
@@ -144,8 +151,8 @@ uint8_t regist() {
             printf("Invalid ID!\n");
             return 1;
         }
-		ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id_str);
-		if (my_user == NULL){
+		ACCOUNT* my_user = get_user_by_id(USER_DATABASE, buffer);
+		if(my_user == NULL){
 			strcpy(account_id_str, buffer);
 			free(my_user);
         	break;
@@ -275,13 +282,6 @@ void biblman_account(){
 	}
 	return;
 }
-
-void print_account_data(ACCOUNT* data){
-		printf("uID: %d\n", data->uid);
-		printf("MD5: %s\n", data->password);
-		printf("Type: %s\n", data->type==1?"Librarian":"Student");
-		printf("Name Offset: %d\n", data->name_offset);
-	}
 
 int32_t main(void){
 	/*
