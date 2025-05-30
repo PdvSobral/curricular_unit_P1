@@ -1,5 +1,5 @@
 /* Encoding: UTF-8
-@Authors: Pedro Sobral (33641)
+@Authors: Pedro Sobral (33641), Alexandre Domingos (27641)
 @Date: 29/05/2025
 @Links: Project github repository -> https://github.com/PdvSobral/curricular_unit_P1
 
@@ -122,6 +122,19 @@ void print_name(const char* database_name, uint32_t name_offset){
 		buffer[30] = 0x00;
 		printf("%s", buffer);
 	}
+	fclose(file);
+	return;
+}
+
+void overwrite_password(const char* database_name, uint32_t name_offset){
+	FILE* file;
+	uint8_t buffer[] = "5f4dcc3b5aa765d61d8327deb882cf99"; // password hash default (pass='password')
+	file = fopen(database_name, "rb+");
+	if (file == NULL) return;
+	fseek(file, name_offset-35, SEEK_SET);
+	fwrite(buffer, sizeof(uint8_t), strlen2(buffer), file);
+	
+			
 	fclose(file);
 	return;
 }
