@@ -313,7 +313,7 @@ int main(){
 	char account_id[6]; account_id[0] = 0x00;
 	char password[MAX_PASSWORD_LENGTH + 1]; password[0] = 0x00;
 	while (1){
-		// chars especiais tipo char
+		// chars especiais tipo setas
 		if ((ch = getch()) == 27) {
 			if ((ch = getch()) == 91) {
 				if ((ch = getch()) == 65 && state != 0){  // up arrow pressed
@@ -352,10 +352,10 @@ int main(){
 				}
 			}
 			if (state == 1 && strlen2(password) < MAX_PASSWORD_LENGTH){
-				// printf("%d", ch);
-				if ((ch == 0x08 || ch == 0x7F) && strlen2(account_id) != 0){   //  Delete and backspace
+				//printf("%d ", ch);
+				if ((ch == 0x08 || ch == 0x7F) && strlen2(password) != 0){   //  Delete and backspace
 					printf("\033[1D \033[1D");
-					account_id[strlen2(account_id)-1] = 0x00;
+					password[strlen2(password)-1] = 0x00;
 				} else {
 					if (ch >= 0x30 && ch <= 0x39){
 						putchar(ch);
@@ -363,6 +363,85 @@ int main(){
 						account_id[temp] = ch;
 						account_id[temp+1] = 0x00;
 					}
+				}
+				if ((int32_t) ch == -61){
+					if ((int32_t) (ch = getch()) == -95) {  // á
+						printf("á");
+						strcpy(password+strlen2(password), "á");
+					}
+					else if ((int32_t) ch == -89) { // ç
+						printf("ç");
+						strcpy(password+strlen2(password), "ç");
+					}
+					else if ((int32_t) ch == -93) { // ã
+						printf("ã");
+						strcpy(password+strlen2(password), "ã");
+					}
+					else if ((int32_t) ch == -94) { // â
+						printf("â");
+						strcpy(password+strlen2(password), "â");
+					}
+					else if ((int32_t) ch == -87) { // é
+						printf("é");
+						strcpy(password+strlen2(password), "é");
+					}
+					else if ((int32_t) ch == -86) { // ê
+						printf("ê");
+						strcpy(password+strlen2(password), "ê");
+					}
+					else if ((int32_t) ch == -83) { // í
+						printf("í");
+						strcpy(password+strlen2(password), "í");
+					}
+					else if ((int32_t) ch == -77) { // ó
+						printf("ó");
+						strcpy(password+strlen2(password), "ó");
+					}
+					else if ((int32_t) ch == -75) { // õ
+						printf("õ");
+						strcpy(password+strlen2(password), "õ");
+					}
+					else if ((int32_t) ch == -76) { // ô
+						printf("ô");
+						strcpy(password+strlen2(password), "ô");
+					}
+					else if ((int32_t) ch == -70) { // ú
+						printf("ú");
+					}
+					else if ((int32_t) ch == -91) { // Á
+						printf("Á");
+					}
+					else if ((int32_t) ch == -89) { // Ç
+						printf("Ç");
+					}
+					else if ((int32_t) ch == -93) { // Ã
+						printf("Ã");
+					}
+					else if ((int32_t) ch == -94) { // Â
+						printf("Â");
+					}
+					else if ((int32_t) ch == -87) { // É
+						printf("É");
+					}
+					else if ((int32_t) ch == -86) { // Ê
+						printf("Ê");
+					}
+					else if ((int32_t) ch == -83) { // Í
+						printf("Í");
+					}
+					else if ((int32_t) ch == -77) { // Ó
+						printf("Ó");
+					}
+					else if ((int32_t) ch == -75) { // Õ
+						printf("Õ");
+					}
+					else if ((int32_t) ch == -76) { // Ô
+						printf("Ô");
+					}
+					else if ((int32_t) ch == -70) { // Ú
+						printf("Ú");
+					}
+
 				}
 			}
 			if (state == 2){
@@ -395,13 +474,6 @@ int main(){
 		}
 		fflush(stdout);
 	}
-/*
-	if(_index+last_zero == menu_size){
-		printf("│  0 - %s", menu_options[_index]);
-	} else {
-		printf("│ %2d - %s", _index + 1,  menu_options[_index]);
-	}
-*/
 	printf("\n\n\n\n\nID: %s\n", account_id);
 	return 0;
 }
