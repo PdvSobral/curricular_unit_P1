@@ -147,11 +147,12 @@ void logout(){
 }
 
 uint8_t regist() {
-    char buffer[64];
+    char buffer[33];		// estava 64, mas basta 33 porque a maior é a hash (32 + 1)
     char account_id_str[6];
-    char md5_hash[33];
-    char account_type_str[2];
 	char password1[MAX_PASSWORD_LENGTH + 1];
+    char md5_hash[33];
+    uint8_t account_type;
+	// TODO: Add confirmations to retype or return to menu.
     char name[LEN_NAME + 1];
     uint8_t flag;
     int64_t account_id;
@@ -175,7 +176,7 @@ uint8_t regist() {
         free(my_user);
     }
     // 2. Password
-     while (1) {
+    while (1) {
         printf("Password: ");
         get_password(buffer, MAX_PASSWORD_LENGTH);
 		strcpy(password1, buffer);
@@ -188,35 +189,26 @@ uint8_t regist() {
 		}
 		printf("Password too long or empty.\n");
         return 1;
-	} 		
+	}
 	hash_md5(buffer, md5_hash);
     // 3. Tipo de Conta
     while (1) {
         printf("Choose account type (Librarian: 1, Student: 0): ");
         read_n_chars(1, buffer);
-        buffer[1] = '\0';
-        if (buffer[0] == '0' || buffer[0] == '1') {
-            strcpy(account_type_str, buffer);
-            break;
-        }
+        account_type = buffer[0] - 0x30;
+        if (account_type == 0 || account_type == 1) break;
         printf("Invalid account type.\n");
     }
     // 4. Nome completo
     printf("Full name: ");
-    fgets(name, LEN_NAME, stdin);
-    name[strcspn(name, "\n")] = 0;  // remover newline
-
+    read_n_chars(LEN_NAME, name);
     // 5. Escrever no CSV
-    FILE* fp = fopen("assets/sys_shadow.csv", "a");
-    if (!fp) {
-        perror("Erro ao abrir ficheiro");
-        return 1;
-    }
-
-    fprintf(fp, "%05ld:%s:%c:%s\n", account_id, md5_hash, *account_type_str, name);
-    fclose(fp);
-
+    FILE* file = fopen("assets/sys_shadow.csv", "a");
+    if (file == NULL) return 1;
+    fprintf(file, "%05ld:%s:%1u:%s\n", account_id, md5_hash, account_type, name);
+    fclose(file);
     printf("Account registered successfully.\n");
+    pause_();
     return 0;
 }
 
