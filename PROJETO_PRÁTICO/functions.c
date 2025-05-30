@@ -20,7 +20,7 @@ The pdf is present in the same repository as this program.
 #include <time.h>
 #include <ctype.h>
 #include <stdint.h>
-#include <termios.h>    // -> Disabl_ctrl_d (IN) functions.c
+#include <termios.h>    // -> Disabl_ctrl_d
 #include <signal.h>		// -> To remap CTRL+C
 #include <string.h>		// strcmp, strlens
 #include <unistd.h>		// sleep, STDIN_FILENO
