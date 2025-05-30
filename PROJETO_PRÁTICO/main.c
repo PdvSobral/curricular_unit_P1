@@ -133,7 +133,6 @@ uint8_t login(uint8_t account_flag_type){
 	printf("'!\n");
 	CURRENT_LOGIN = *my_user;
 	free(my_user);
-	print_account_data(&CURRENT_LOGIN);
 	pause_();
 	return 0;  // sucessfull
 }
@@ -147,7 +146,7 @@ void logout(){
 }
 
 uint8_t regist() {
-    char buffer[33];		// estava 64, mas basta 33 porque a maior é a hash (32 + 1)
+    char buffer[LEN_NAME];		// string maior a ser lida
     char account_id_str[6];
 	char password1[MAX_PASSWORD_LENGTH + 1];
     char md5_hash[33];
