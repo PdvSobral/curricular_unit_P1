@@ -147,11 +147,11 @@ uint8_t regist() {
 		ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id_str);
 		if (my_user == NULL){
 			strcpy(account_id_str, buffer);
+			free(my_user);
         	break;
-		}else{
-			printf("Account ID already exists!\n");
 		}
-        
+		printf("Account ID already exists!\n");
+        free(my_user);
     }
     // 2. Password
     while (1) {
