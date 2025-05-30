@@ -158,7 +158,7 @@ uint8_t regist() {
     hash_md5(buffer, md5_hash);
     // 3. Tipo de Conta
     while (1) {
-        printf("Choose account type (Librarian: 0, Student: 1): ");
+        printf("Choose account type (Librarian: 1, Student: 0): ");
         read_n_chars(1, buffer);
         buffer[1] = '\0';
         if (buffer[0] == '0' || buffer[0] == '1') {
