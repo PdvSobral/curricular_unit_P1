@@ -138,6 +138,7 @@ uint8_t regist() {
     char account_id_str[6];
     char md5_hash[33];
     char account_type_str[2];
+	char password1[MAX_PASSWORD_LENGTH + 1];
     char name[LEN_NAME + 1];
     uint8_t flag;
     int64_t account_id;
@@ -161,14 +162,21 @@ uint8_t regist() {
         free(my_user);
     }
     // 2. Password
-    while (1) {
+     while (1) {
         printf("Password: ");
         get_password(buffer, MAX_PASSWORD_LENGTH);
-        if (strlen2(buffer) > 0 && strlen2(buffer) <= MAX_PASSWORD_LENGTH) break;
-        printf("Password too long or empty.\n");
+		strcpy(password1, buffer);
+        if (strlen2(buffer) > 0 && strlen2(buffer) <= MAX_PASSWORD_LENGTH){
+			printf("Confirm Password: ");
+        	get_password(buffer, MAX_PASSWORD_LENGTH);
+			if(strcmp(password1, buffer) == 0) break;
+			printf("Password is not the same!\n");
+			return 1;
+		}
+		printf("Password too long or empty.\n");
         return 1;
-    }
-    hash_md5(buffer, md5_hash);
+	} 		
+	hash_md5(buffer, md5_hash);
     // 3. Tipo de Conta
     while (1) {
         printf("Choose account type (Librarian: 1, Student: 0): ");
