@@ -8,7 +8,8 @@ The pdf is present in the same repository as this program.
 */
 // Makes so that if "#define __main__" is not somewhere before this program is compiled an error ocurs, stopping compilation
 #ifndef __main__
-#pragma GCC error "This code is not meant to be compiled directly."
+#pragma GCC warning "This code (function.c) is not meant to be compiled directly. Be sure you know what you are doing."
+#define __functions_c__
 #else
 // Makes so that this file is only included once
 #pragma once
@@ -394,3 +395,47 @@ int64_t menu(const char tittle[], uint8_t len_cabecalho, const char menu_options
 	printf("\n");
 	return _option;
 };
+
+char getch() {
+    char ch;
+    struct termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt); 			// Get the current terminal settings
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);			// Disable canonical mode and echo
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);	// Set new terminal settings
+    read(STDIN_FILENO, &ch, 1);					// Read a single character from stdin
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);	// Restore the old terminal settings
+    return ch;
+}
+
+
+void get_password(char *password_str, uint16_t max_length) {
+	fflush(stdout);
+    char ch;
+    uint16_t current_length = 0;
+    while(1) {
+        ch = getch();
+        if (ch == 0x0A) break;
+        else if ((ch == 0x08 || ch == 0x7F) && current_length > 0) { // Backspace and Delete
+            current_length--;
+            printf("\b \b"); // remove the last char and move back
+        }
+        else if (current_length < max_length) {
+            password_str[current_length++] = ch;
+            printf("*"); // Print asterisks for each character
+        }
+        fflush(stdout);
+    }
+    password_str[current_length] = 0x00; // Null-terminate the string
+    printf("\n"); // Move to the next line after password input
+    return;
+}
+
+#ifdef __functions_c__
+	int main(){
+		char password[21];
+		get_password(password, 20);
+		printf("Password '%s'\n", password);
+		return 0;
+	}
+#endif

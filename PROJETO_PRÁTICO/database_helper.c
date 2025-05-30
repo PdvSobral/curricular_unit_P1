@@ -101,6 +101,31 @@ ACCOUNT* get_user_by_id(const char* database_name, const char* id){
 	return NULL;
 }
 
+void print_name(const char* database_name, uint32_t name_offset){
+	FILE* file;
+	uint8_t buffer[31];
+	uint8_t bytesRead;
+	file = fopen(database_name, "rb");
+	if (file == NULL) return;
+	fseek(file, name_offset, SEEK_SET);
+	while (1) {
+		bytesRead = fread(buffer, 1, 30, file);
+		if (bytesRead == 0) break;
+		for (uint8_t i = 0; i < bytesRead; i++) {
+			if (buffer[i] == '\n') {
+				buffer[i] = 0x00;
+				printf("%s", buffer);
+				fclose(file);
+				return;
+			}
+		}
+		buffer[30] = 0x00;
+		printf("%s", buffer);
+	}
+	fclose(file);
+	return;
+}
+
 #ifdef __database_helper__
 	void print_account_data(ACCOUNT* data){
 		printf("uID: %d\n", data->uid);

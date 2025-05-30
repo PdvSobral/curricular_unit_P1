@@ -197,7 +197,7 @@ uint8_t login(uint8_t account_flag_type){
 	} strcpy(account_id_str, buffer);
 	while (1){
 		printf("Password: ");
-		read_n_chars(MAX_PASSWORD_LENGTH + 1, buffer);
+		get_password(buffer, MAX_PASSWORD_LENGTH);
 		if (strlen2(buffer) <= MAX_PASSWORD_LENGTH) break;
 		printf("Invalid password type for system!\n");
 		pause_();
@@ -205,16 +205,17 @@ uint8_t login(uint8_t account_flag_type){
 	}
 	ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id_str);
 	hash_md5(buffer, md5_hash);
-	if (my_user == NULL || strcmp(my_user->password, md5_hash)!=0){
+	if (my_user == NULL || my_user->type == account_flag_type || strcmp(my_user->password, md5_hash)!=0){
 		free(my_user);
 		printf("INVALID CREDENTIALS!\n");
 		pause_();
 		return 1;
 	}
-	else print_account_data(my_user);
-
+	// else print_account_data(my_user);
 	// TODO: De alguma forma registar a conta "logada" atualmente
-	printf("Login Sucessfull as %s!\n", "TO_GET_NAME");
+	printf("Login Sucessfull as '");
+	print_name(USER_DATABASE, my_user->name_offset);
+	printf("'!\n");
 	free(my_user);
 	pause_();
 	return 0;  // sucessfull
