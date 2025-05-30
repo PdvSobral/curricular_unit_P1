@@ -241,21 +241,18 @@ void student_account(){
 		Nenhum
 	*/
 	uint8_t _escolha_menu;
-	char buffer[3];
 	while (1){
 		clear_screen();
 		_escolha_menu = menu("MAIN MENU ", CABECALHO_LEN, student_account_menu, len_student_account_menu, 1);
 		if(_escolha_menu==0){
-			printf("Do really wish to logout(1) or do you wish to return to the menu (any other value)? -> ");
-			read_n_chars(2, buffer);
-			_escolha_menu = str_to_int64_t(buffer);
-			if(_escolha_menu==1) {
+			clear_screen();
+			_escolha_menu = confirmation_with_cabecalho("LOGOUT", "Are you sure you want to log out?", CABECALHO_LEN);
+			if(_escolha_menu==0) {
 				logout();
 				return;
 			};
-		};
+		} else
 		switch(_escolha_menu){
-			case 0: break;
 			case 6: mng_student_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
@@ -292,19 +289,17 @@ void biblman_account(){
 		Nenhum
 	*/
 	uint8_t _escolha_menu;
-	char buffer[3];
 	while (1){
 		clear_screen();
 		_escolha_menu = menu("MAIN MENU ", CABECALHO_LEN, biblman_account_menu, len_biblman_account_menu, 1);
 		if(_escolha_menu==0){
-			printf("Do really wish to logout(1) or do you wish to return to the menu (any other value)? -> ");
-			read_n_chars(2, buffer);
-			_escolha_menu = str_to_int64_t(buffer);
-			if(_escolha_menu==1) {
+			clear_screen();
+			_escolha_menu = confirmation_with_cabecalho("LOGOUT", "Are you sure you want to log out?", CABECALHO_LEN);
+			if(_escolha_menu==0) {
 				logout();
 				return;
 			};
-		};
+		} else
 		switch(_escolha_menu){
 			case 0: break;
 			case 6: mng_biblman_account(); break;

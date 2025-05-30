@@ -427,6 +427,47 @@ void get_password(char *password_str, uint16_t max_length) {
     return;
 }
 
+uint8_t confirmation_with_cabecalho(char* cabecalho_msg, char* main_msg, uint8_t len_cabecalho){
+	cabecalho(cabecalho_msg, len_cabecalho);
+	reset_line(len_cabecalho);
+	printf("│ %s", main_msg);
+	printf("\033[%uC│\n", len_cabecalho - 3 - strlen2(main_msg));
+	for (uint8_t i = 0; i < len_cabecalho; i++) printf("─");
+	printf("\n");
+	reset_line(len_cabecalho);
+	printf("│ [*] Yes     [ ] No");
+	printf("\033[%uC│\n", len_cabecalho - 21);
+	printf("└");
+	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
+		printf("─");
+	} printf("┘");
+	printf("\033[1A\033[999D\033[3C");
+	fflush(stdout);
+	uint8_t state=0; //0 - account is  | 1 - password id   | login 'button'
+	char ch;
+	while (1){
+		// chars especiais tipo setas
+		if (((ch = getch()) == 27) && ((ch = getch()) == 91)) {
+			if (((ch = getch()) == 65 || ch == 68) && state != 0){  // up arrow and left arrow pressed
+				printf(" \033[13D*\033[1D");
+				state--;
+			}
+			else if ((ch == 66 || ch == 67) && state != 1){ // down arrow and right arrow pressed
+				printf(" \033[11C*\033[1D");
+				state++;
+			}
+		}
+		else {
+			if (ch == 0x0A){
+				printf("\n\n");
+				return state;
+			}
+		}
+		fflush(stdout);
+	}
+}
+
+
 #ifdef __functions_c__
 	int main(){
 		char password[21];
