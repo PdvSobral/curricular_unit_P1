@@ -1,5 +1,5 @@
 /* Encoding: UTF-8
-@Authors: Pedro Sobral (33641), Alexandre Domingos (27641), Diogo Meneses (TODO: Diogo, põe o teu número aqui)
+@Authors: Pedro Sobral (33641), Alexandre Domingos (27641), Diogo Meneses (33826)
 @Date: 29/05/2025
 @Links: Project github repository -> https://github.com/PdvSobral/curricular_unit_P1
 
