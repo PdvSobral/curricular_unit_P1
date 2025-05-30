@@ -20,10 +20,6 @@ For now, it's just an adaptation in progress of another program.
 #include <unistd.h>		// sleep, STDIN_FILENO
 
 #ifndef psystem
-	#include <stdio.h>		// printf, scanf
-	#include <stdlib.h>		// malloc, alloc (sem ela tmb tive algumas instabilidades com o uso de unsigneds)
-	#include <stdint.h>		// uint8_t
-	#include <string.h>		// strcmp, strlen
 	#pragma GCC warning "Loaded standard modules. Please use strlen2 instead of strlen."
 #else
 	#include "good_practices.c"
