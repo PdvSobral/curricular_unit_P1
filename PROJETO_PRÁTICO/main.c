@@ -217,6 +217,66 @@ uint8_t login(uint8_t account_flag_type){
 	return 0;  // sucessfull
 }
 
+uint8_t regist() {
+    char buffer[64];
+    char account_id_str[6];
+    char md5_hash[33];
+    char account_type_str[2];
+    char name[LEN_NAME + 1];
+    uint8_t flag;
+    int64_t account_id;
+    // 1. Account ID
+    while (1) {
+        printf("Account ID (5 digits): ");
+        read_n_chars(5, buffer);
+        buffer[5] = '\0';
+        account_id = str_to_int64_t_flag(buffer, &flag);
+        if (strlen2(buffer) != 5 || flag != 1) {
+            printf("Invalid ID!\n");
+            return 1;
+        }
+        strcpy(account_id_str, buffer);
+        break;
+    }
+    // 2. Password
+    while (1) {
+        printf("Password: ");
+        get_password(buffer, MAX_PASSWORD_LENGTH);
+        if (strlen2(buffer) > 0 && strlen2(buffer) <= MAX_PASSWORD_LENGTH) break;
+        printf("Password too long or empty.\n");
+        return 1;
+    }
+    hash_md5(buffer, md5_hash);
+    // 3. Tipo de Conta
+    while (1) {
+        printf("Choose account type (Librarian: 0, Student: 1): ");
+        read_n_chars(1, buffer);
+        buffer[1] = '\0';
+        if (buffer[0] == '0' || buffer[0] == '1') {
+            strcpy(account_type_str, buffer);
+            break;
+        }
+        printf("Invalid account type.\n");
+    }
+    // 4. Nome completo
+    printf("Full name: ");
+    fgets(name, LEN_NAME, stdin);
+    name[strcspn(name, "\n")] = 0;  // remover newline
+
+    // 5. Escrever no CSV
+    FILE* fp = fopen("assets/sys_shadow.csv", "a");
+    if (!fp) {
+        perror("Erro ao abrir ficheiro");
+        return 1;
+    }
+
+    fprintf(fp, "%05d:%s:%c:%s\n", account_id, md5_hash, account_type_str, name);
+    fclose(fp);
+
+    printf("Account registered successfully.\n");
+    return 0;
+}
+
 int32_t main(void){
 	/*
 	Função primária do programa
