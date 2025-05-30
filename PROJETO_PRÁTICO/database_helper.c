@@ -57,7 +57,7 @@ LinkedList* get_users_ids(const char* database_name){
 	return to_return;
 }
 
-ACCOUNT* get_user_with_id(const char* database_name, const char* id){
+ACCOUNT* get_user_by_id(const char* database_name, const char* id){
 	FILE* file;
 	uint8_t buffer[34];
 	uint8_t to_read=5;
@@ -111,7 +111,11 @@ ACCOUNT* get_user_with_id(const char* database_name, const char* id){
 
 	int main() {
 		const char* filename = "./assets/sys_shadow.csv";
-		ACCOUNT* my_user = get_user_with_id(filename, "33641");
+		char to_check[10];
+		printf("Enter ID to search: ");
+		scanf("%5[^\n]", to_check);
+		printf("Checking for: '%s'\n", to_check);
+		ACCOUNT* my_user = get_user_by_id(filename, to_check);
 		if (my_user == NULL) printf("NO USER FOUND!\n");
 		else print_account_data(my_user);
 		free(my_user);

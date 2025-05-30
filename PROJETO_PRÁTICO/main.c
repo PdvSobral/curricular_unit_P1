@@ -39,7 +39,8 @@ For now, it's just an adaptation in progress of another program.
 #include "md5.c"
 
 #define AGGRESSIVE
-const char* DATABASE = "./assets/sys_shadow.csv";
+#define MAX_PASSWORD_LENGTH 30
+const char* USER_DATABASE = "./assets/sys_shadow.csv";
 
 // Defenition of the menu arrays
 const uint8_t len_main_menu = 3;
@@ -172,41 +173,49 @@ void biblman_account(){
 	return;
 }
 
-int32_t compare_ids(void* a, void* b){
-	if (strcmp((char*) a, (char*) b)==0) return 1; else return 0;
-}
+void print_account_data(ACCOUNT* data){
+		printf("uID: %d\n", data->uid);
+		printf("MD5: %s\n", data->password);
+		printf("Type: %s\n", data->type==1?"Librarian":"Student");
+		printf("Name Offset: %d\n", data->name_offset);
+	}
+
 uint8_t login(uint8_t account_flag_type){
 	char buffer[26];
 	uint8_t flag=0;
 	uint32_t account_id;
+	char account_id_str[6];
+	char md5_hash[33];
 	while (1){
 		printf("Account ID: ");
 		read_n_chars(6, buffer);
 		account_id = (int64_t) str_to_int64_t_flag(buffer, &flag);
-		if (flag==1 && account_id <= 99999) {
-			LinkedList* users_ids = get_users_ids(DATABASE);
-			if (find_node2(users_ids, buffer, compare_ids)>=0){
-				delete_linked_list(users_ids, free);
-				break;
-			}
-			delete_linked_list(users_ids, free);
-		}
-		printf("Invalid ID for %s account!\n", account_flag_type == 0 ? "librarian" : "student");
+		if (flag==1 && account_id <= 99999 && strlen2(buffer)==5) break;
+		printf("Invalid ID!\n");
 		pause_();
 		return 1;  // TODO: Adicionar confirmação se quer reintroduzir ou voltar ao menu inicial
-	}
+	} strcpy(account_id_str, buffer);
 	while (1){
 		printf("Password: ");
-		read_n_chars(25, buffer);
-		if (strlen2(buffer) <= 24){
-			break; // TODO: also make the check
-		}
-		printf("Invalid password!\n");
+		read_n_chars(MAX_PASSWORD_LENGTH + 1, buffer);
+		if (strlen2(buffer) <= MAX_PASSWORD_LENGTH) break;
+		printf("Invalid password type for system!\n");
 		pause_();
 		return 1;  // TODO: Adicionar confirmação se quer reintroduzir ou voltar ao menu inicial
 	}
+	ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id_str);
+	hash_md5(buffer, md5_hash);
+	if (my_user == NULL || strcmp(my_user->password, md5_hash)!=0){
+		free(my_user);
+		printf("INVALID CREDENTIALS!\n");
+		pause_();
+		return 1;
+	}
+	else print_account_data(my_user);
+
 	// TODO: De alguma forma registar a conta "logada" atualmente
 	printf("Login Sucessfull as %s!\n", "TO_GET_NAME");
+	free(my_user);
 	pause_();
 	return 0;  // sucessfull
 }
