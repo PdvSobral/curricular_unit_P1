@@ -84,98 +84,7 @@ const char mng_biblman_account_menu[][CABECALHO_LEN] = {
 	"Return to main menu"
 };
 
-// MENUS
-void mng_student_account(){
-	/*
-	Procedimento para criar e correr o menu de gestão dos alunos
-	Argumentos:
-		SELF* self -> Struct do tipo _self que contém o contexto de chamada.
-	Retorno:
-		Nenhum
-	*/
-	uint8_t _escolha_menu;
-	while (1){
-		clear_screen();
-		_escolha_menu = menu("MANAGE ACCOUNT", CABECALHO_LEN, mng_student_account_menu, len_mng_student_account_menu, 1);
-		if(_escolha_menu==0) break;
-		clear_screen();
-		switch(_escolha_menu){
-			default: printf("\nFunção ainda não implementada!!\n");
-		}
-	}
-	return;
-}
-void student_account(){
-	/*
-	Procedimento para criar e correr o menu de gestão dos alunos
-	Argumentos:
-		SELF* self -> Struct do tipo _self que contém o contexto de chamada.
-	Retorno:
-		Nenhum
-	*/
-	uint8_t _escolha_menu;
-	while (1){
-		clear_screen();
-		_escolha_menu = menu("MAIN MENU ", CABECALHO_LEN, student_account_menu, len_student_account_menu, 1);
-		if(_escolha_menu==0) break;
-		clear_screen();
-		switch(_escolha_menu){
-			case 6: mng_student_account(); break;
-			default: printf("\nFunção ainda não implementada!!\n");
-		}
-	}
-	return;
-}
-
-void mng_biblman_account(){
-	/*
-	Procedimento para criar e correr o menu de gestão dos instrutores
-	Argumentos:
-		SELF* self -> Struct do tipo _self que contém o contexto de chamada.
-	Retorno:
-		Nenhum
-	*/
-	uint8_t _escolha_menu;
-	while (1){
-		clear_screen();
-		_escolha_menu = menu("MANAGE SYSTEM ", CABECALHO_LEN, mng_biblman_account_menu, len_mng_biblman_account_menu, 1);
-		if(_escolha_menu==0){
-			break;
-		}
-		switch(_escolha_menu){
-			default: printf("\nFunção ainda não implementada!!\n");
-		}
-	}
-	return;
-}
-void biblman_account(){
-	/*
-	Procedimento para criar e correr o menu de gestão dos instrutores
-	Argumentos:
-		SELF* self -> Struct do tipo _self que contém o contexto de chamada.
-	Retorno:
-		Nenhum
-	*/
-	uint8_t _escolha_menu;
-	while (1){
-		clear_screen();
-		_escolha_menu = menu("MAIN MENU ", CABECALHO_LEN, biblman_account_menu, len_biblman_account_menu, 1);
-		if(_escolha_menu==0) break;
-		switch(_escolha_menu){
-			case 6: mng_biblman_account(); break;
-			default: printf("\nFunção ainda não implementada!!\n");
-		}
-	}
-	return;
-}
-
-void print_account_data(ACCOUNT* data){
-		printf("uID: %d\n", data->uid);
-		printf("MD5: %s\n", data->password);
-		printf("Type: %s\n", data->type==1?"Librarian":"Student");
-		printf("Name Offset: %d\n", data->name_offset);
-	}
-
+// FUNÇÕES
 uint8_t login(uint8_t account_flag_type){
 	char buffer[26];
 	uint8_t flag=0;
@@ -270,12 +179,103 @@ uint8_t regist() {
         return 1;
     }
 
-    fprintf(fp, "%05d:%s:%c:%s\n", account_id, md5_hash, account_type_str, name);
+    fprintf(fp, "%05ld:%s:%c:%s\n", account_id, md5_hash, *account_type_str, name);
     fclose(fp);
 
     printf("Account registered successfully.\n");
     return 0;
 }
+
+// MENUS
+void mng_student_account(){
+	/*
+	Procedimento para criar e correr o menu de gestão dos alunos
+	Argumentos:
+		SELF* self -> Struct do tipo _self que contém o contexto de chamada.
+	Retorno:
+		Nenhum
+	*/
+	uint8_t _escolha_menu;
+	while (1){
+		clear_screen();
+		_escolha_menu = menu("MANAGE ACCOUNT", CABECALHO_LEN, mng_student_account_menu, len_mng_student_account_menu, 1);
+		if(_escolha_menu==0) break;
+		clear_screen();
+		switch(_escolha_menu){
+			default: printf("\nFunção ainda não implementada!!\n");
+		}
+	}
+	return;
+}
+void student_account(){
+	/*
+	Procedimento para criar e correr o menu de gestão dos alunos
+	Argumentos:
+		SELF* self -> Struct do tipo _self que contém o contexto de chamada.
+	Retorno:
+		Nenhum
+	*/
+	uint8_t _escolha_menu;
+	while (1){
+		clear_screen();
+		_escolha_menu = menu("MAIN MENU ", CABECALHO_LEN, student_account_menu, len_student_account_menu, 1);
+		if(_escolha_menu==0) break;
+		clear_screen();
+		switch(_escolha_menu){
+			case 6: mng_student_account(); break;
+			default: printf("\nFunção ainda não implementada!!\n");
+		}
+	}
+	return;
+}
+
+void mng_biblman_account(){
+	/*
+	Procedimento para criar e correr o menu de gestão dos instrutores
+	Argumentos:
+		SELF* self -> Struct do tipo _self que contém o contexto de chamada.
+	Retorno:
+		Nenhum
+	*/
+	uint8_t _escolha_menu;
+	while (1){
+		clear_screen();
+		_escolha_menu = menu("MANAGE SYSTEM ", CABECALHO_LEN, mng_biblman_account_menu, len_mng_biblman_account_menu, 1);
+		if(_escolha_menu==0) break;
+		switch(_escolha_menu){
+			case 5: regist(); break;
+			default: printf("\nFunção ainda não implementada!!\n");
+		}
+	}
+	return;
+}
+void biblman_account(){
+	/*
+	Procedimento para criar e correr o menu de gestão dos instrutores
+	Argumentos:
+		SELF* self -> Struct do tipo _self que contém o contexto de chamada.
+	Retorno:
+		Nenhum
+	*/
+	uint8_t _escolha_menu;
+	while (1){
+		clear_screen();
+		_escolha_menu = menu("MAIN MENU ", CABECALHO_LEN, biblman_account_menu, len_biblman_account_menu, 1);
+		if(_escolha_menu==0) break;
+		switch(_escolha_menu){
+			case 6: mng_biblman_account(); break;
+			default: printf("\nFunção ainda não implementada!!\n");
+		}
+	}
+	return;
+}
+
+void print_account_data(ACCOUNT* data){
+		printf("uID: %d\n", data->uid);
+		printf("MD5: %s\n", data->password);
+		printf("Type: %s\n", data->type==1?"Librarian":"Student");
+		printf("Name Offset: %d\n", data->name_offset);
+	}
 
 int32_t main(void){
 	/*
