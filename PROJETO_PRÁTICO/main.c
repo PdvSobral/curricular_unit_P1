@@ -144,8 +144,14 @@ uint8_t regist() {
             printf("Invalid ID!\n");
             return 1;
         }
-        strcpy(account_id_str, buffer);
-        break;
+		ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id_str);
+		if (my_user == NULL){
+			strcpy(account_id_str, buffer);
+        	break;
+		}else{
+			printf("Account ID already exists!\n");
+		}
+        
     }
     // 2. Password
     while (1) {
