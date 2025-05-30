@@ -84,6 +84,114 @@ const char mng_biblman_account_menu[][CABECALHO_LEN] = {
 	"Return to main menu"
 };
 
+// FUNÇÕES
+uint8_t login(uint8_t account_flag_type){
+	char buffer[26];
+	uint8_t flag=0;
+	uint32_t account_id;
+	char account_id_str[6];
+	char md5_hash[33];
+	while (1){
+		printf("Account ID: ");
+		read_n_chars(6, buffer);
+		account_id = (int64_t) str_to_int64_t_flag(buffer, &flag);
+		if (flag==1 && account_id <= 99999 && strlen2(buffer)==5) break;
+		printf("Invalid ID!\n");
+		pause_();
+		return 1;  // TODO: Adicionar confirmação se quer reintroduzir ou voltar ao menu inicial
+	} strcpy(account_id_str, buffer);
+	while (1){
+		printf("Password: ");
+		get_password(buffer, MAX_PASSWORD_LENGTH);
+		if (strlen2(buffer) <= MAX_PASSWORD_LENGTH) break;
+		printf("Invalid password type for system!\n");
+		pause_();
+		return 1;  // TODO: Adicionar confirmação se quer reintroduzir ou voltar ao menu inicial
+	}
+	ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id_str);
+	hash_md5(buffer, md5_hash);
+	if (my_user == NULL || my_user->type == account_flag_type || strcmp(my_user->password, md5_hash)!=0){
+		free(my_user);
+		printf("INVALID CREDENTIALS!\n");
+		pause_();
+		return 1;
+	}
+	// else print_account_data(my_user);
+	// TODO: De alguma forma registar a conta "logada" atualmente
+	printf("Login Sucessfull as '");
+	print_name(USER_DATABASE, my_user->name_offset);
+	printf("'!\n");
+	free(my_user);
+	pause_();
+	return 0;  // sucessfull
+}
+
+uint8_t regist() {
+    char buffer[64];
+    char account_id_str[6];
+    char md5_hash[33];
+    char account_type_str[2];
+    char name[LEN_NAME + 1];
+    uint8_t flag;
+    int64_t account_id;
+    // 1. Account ID
+    while (1) {
+        printf("Account ID (5 digits): ");
+        read_n_chars(5, buffer);
+        buffer[5] = '\0';
+        account_id = str_to_int64_t_flag(buffer, &flag);
+        if (strlen2(buffer) != 5 || flag != 1) {
+            printf("Invalid ID!\n");
+            return 1;
+        }
+		ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id_str);
+		if (my_user == NULL){
+			strcpy(account_id_str, buffer);
+			free(my_user);
+        	break;
+		}
+		printf("Account ID already exists!\n");
+        free(my_user);
+    }
+    // 2. Password
+    while (1) {
+        printf("Password: ");
+        get_password(buffer, MAX_PASSWORD_LENGTH);
+        if (strlen2(buffer) > 0 && strlen2(buffer) <= MAX_PASSWORD_LENGTH) break;
+        printf("Password too long or empty.\n");
+        return 1;
+    }
+    hash_md5(buffer, md5_hash);
+    // 3. Tipo de Conta
+    while (1) {
+        printf("Choose account type (Librarian: 1, Student: 0): ");
+        read_n_chars(1, buffer);
+        buffer[1] = '\0';
+        if (buffer[0] == '0' || buffer[0] == '1') {
+            strcpy(account_type_str, buffer);
+            break;
+        }
+        printf("Invalid account type.\n");
+    }
+    // 4. Nome completo
+    printf("Full name: ");
+    fgets(name, LEN_NAME, stdin);
+    name[strcspn(name, "\n")] = 0;  // remover newline
+
+    // 5. Escrever no CSV
+    FILE* fp = fopen("assets/sys_shadow.csv", "a");
+    if (!fp) {
+        perror("Erro ao abrir ficheiro");
+        return 1;
+    }
+
+    fprintf(fp, "%05ld:%s:%c:%s\n", account_id, md5_hash, *account_type_str, name);
+    fclose(fp);
+
+    printf("Account registered successfully.\n");
+    return 0;
+}
+
 // MENUS
 void mng_student_account(){
 	/*
@@ -139,10 +247,9 @@ void mng_biblman_account(){
 	while (1){
 		clear_screen();
 		_escolha_menu = menu("MANAGE SYSTEM ", CABECALHO_LEN, mng_biblman_account_menu, len_mng_biblman_account_menu, 1);
-		if(_escolha_menu==0){
-			break;
-		}
+		if(_escolha_menu==0) break;
 		switch(_escolha_menu){
+			case 5: regist(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
 	}
@@ -175,47 +282,6 @@ void print_account_data(ACCOUNT* data){
 		printf("Type: %s\n", data->type==1?"Librarian":"Student");
 		printf("Name Offset: %d\n", data->name_offset);
 	}
-
-uint8_t login(uint8_t account_flag_type){
-	char buffer[26];
-	uint8_t flag=0;
-	uint32_t account_id;
-	char account_id_str[6];
-	char md5_hash[33];
-	while (1){
-		printf("Account ID: ");
-		read_n_chars(6, buffer);
-		account_id = (int64_t) str_to_int64_t_flag(buffer, &flag);
-		if (flag==1 && account_id <= 99999 && strlen2(buffer)==5) break;
-		printf("Invalid ID!\n");
-		pause_();
-		return 1;  // TODO: Adicionar confirmação se quer reintroduzir ou voltar ao menu inicial
-	} strcpy(account_id_str, buffer);
-	while (1){
-		printf("Password: ");
-		get_password(buffer, MAX_PASSWORD_LENGTH);
-		if (strlen2(buffer) <= MAX_PASSWORD_LENGTH) break;
-		printf("Invalid password type for system!\n");
-		pause_();
-		return 1;  // TODO: Adicionar confirmação se quer reintroduzir ou voltar ao menu inicial
-	}
-	ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id_str);
-	hash_md5(buffer, md5_hash);
-	if (my_user == NULL || my_user->type == account_flag_type || strcmp(my_user->password, md5_hash)!=0){
-		free(my_user);
-		printf("INVALID CREDENTIALS!\n");
-		pause_();
-		return 1;
-	}
-	// else print_account_data(my_user);
-	// TODO: De alguma forma registar a conta "logada" atualmente
-	printf("Login Sucessfull as '");
-	print_name(USER_DATABASE, my_user->name_offset);
-	printf("'!\n");
-	free(my_user);
-	pause_();
-	return 0;  // sucessfull
-}
 
 int32_t main(void){
 	/*
