@@ -37,6 +37,7 @@ For now, it's just an adaptation in progress of another program.
 #define AGGRESSIVE
 #define MAX_PASSWORD_LENGTH 30
 const char* USER_DATABASE = "./assets/sys_shadow.csv";
+static ACCOUNT CURRENT_LOGIN = {0, 999999999, 2, ""};
 
 // Defenition of the menu arrays
 const uint8_t len_main_menu = 3;
@@ -104,8 +105,10 @@ uint8_t login(uint8_t account_flag_type){
 		account_id = (int64_t) str_to_int64_t_flag(buffer, &flag);
 		if (flag==1 && account_id <= 99999 && strlen2(buffer)==5) break;
 		printf("Invalid ID!\n");
-		pause_();
-		return 1;  // TODO: Adicionar confirmação se quer reintroduzir ou voltar ao menu inicial
+		printf("Do you wish to retype the ID (1) or return to the menu (any other value)? -> ");
+		read_n_chars(2, buffer);
+		account_id = str_to_int64_t(buffer);
+		if(!(account_id==1)) return 1;
 	} strcpy(account_id_str, buffer);
 	while (1){
 		printf("Password: ");
@@ -113,7 +116,7 @@ uint8_t login(uint8_t account_flag_type){
 		if (strlen2(buffer) <= MAX_PASSWORD_LENGTH) break;
 		printf("Invalid password type for system!\n");
 		pause_();
-		return 1;  // TODO: Adicionar confirmação se quer reintroduzir ou voltar ao menu inicial
+		return 1;
 	}
 	ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id_str);
 	hash_md5(buffer, md5_hash);
@@ -128,9 +131,19 @@ uint8_t login(uint8_t account_flag_type){
 	printf("Login Sucessfull as '");
 	print_name(USER_DATABASE, my_user->name_offset);
 	printf("'!\n");
+	CURRENT_LOGIN = *my_user;
 	free(my_user);
+	print_account_data(&CURRENT_LOGIN);
 	pause_();
 	return 0;  // sucessfull
+}
+
+void logout(){
+	CURRENT_LOGIN.uid = 0;
+	CURRENT_LOGIN.name_offset = 999999999;
+	CURRENT_LOGIN.type = 2;
+	strcpy(CURRENT_LOGIN.password, "");
+	return;
 }
 
 uint8_t regist() {
@@ -229,12 +242,21 @@ void student_account(){
 		Nenhum
 	*/
 	uint8_t _escolha_menu;
+	char buffer[3];
 	while (1){
 		clear_screen();
 		_escolha_menu = menu("MAIN MENU ", CABECALHO_LEN, student_account_menu, len_student_account_menu, 1);
-		if(_escolha_menu==0) break;
-		clear_screen();
+		if(_escolha_menu==0){
+			printf("Do really wish to logout(1) or do you wish to return to the menu (any other value)? -> ");
+			read_n_chars(2, buffer);
+			_escolha_menu = str_to_int64_t(buffer);
+			if(_escolha_menu==1) {
+				logout();
+				return;
+			};
+		};
 		switch(_escolha_menu){
+			case 0: break;
 			case 6: mng_student_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
@@ -271,11 +293,21 @@ void biblman_account(){
 		Nenhum
 	*/
 	uint8_t _escolha_menu;
+	char buffer[3];
 	while (1){
 		clear_screen();
 		_escolha_menu = menu("MAIN MENU ", CABECALHO_LEN, biblman_account_menu, len_biblman_account_menu, 1);
-		if(_escolha_menu==0) break;
+		if(_escolha_menu==0){
+			printf("Do really wish to logout(1) or do you wish to return to the menu (any other value)? -> ");
+			read_n_chars(2, buffer);
+			_escolha_menu = str_to_int64_t(buffer);
+			if(_escolha_menu==1) {
+				logout();
+				return;
+			};
+		};
 		switch(_escolha_menu){
+			case 0: break;
 			case 6: mng_biblman_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}

@@ -109,7 +109,7 @@ void print_name(const char* database_name, uint32_t name_offset){
 	if (file == NULL) return;
 	fseek(file, name_offset, SEEK_SET);
 	while (1) {
-		bytesRead = fread(buffer, 1, 30, file);
+		bytesRead = fread(buffer, 1, 10, file);
 		if (bytesRead == 0) break;
 		for (uint8_t i = 0; i < bytesRead; i++) {
 			if (buffer[i] == '\n') {
@@ -119,7 +119,7 @@ void print_name(const char* database_name, uint32_t name_offset){
 				return;
 			}
 		}
-		buffer[30] = 0x00;
+		buffer[10] = 0x00;
 		printf("%s", buffer);
 	}
 	fclose(file);
