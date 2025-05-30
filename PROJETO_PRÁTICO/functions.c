@@ -106,6 +106,17 @@ void handle_sigint(int32_t sig) {
     enable_ctrl_d();
     exit(1);
 }
+char getch() {
+    char ch;
+    struct termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt); 			// Get the current terminal settings
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);			// Disable canonical mode and echo
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);	// Set new terminal settings
+    read(STDIN_FILENO, &ch, 1);					// Read a single character from stdin
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);	// Restore the old terminal settings
+    return ch;
+}
 
 void clear_screen(){
 	/*
@@ -295,11 +306,9 @@ int8_t strIsNum(char *str){
 }
 
 void pause_() {
-	// TODO: It might break in some places, programers beware!
     printf("Press any key to continue . . . ");
-	char command[9] = "%1[^\n]";
-	scanf(command, command);
-	flush_stdin();
+    fflush(stdout);
+	getch();
 }
 
 void cabecalho(const char msg[], uint8_t len_cabecalho){
@@ -395,19 +404,6 @@ int64_t menu(const char tittle[], uint8_t len_cabecalho, const char menu_options
 	printf("\n");
 	return _option;
 };
-
-char getch() {
-    char ch;
-    struct termios oldt, newt;
-    tcgetattr(STDIN_FILENO, &oldt); 			// Get the current terminal settings
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);			// Disable canonical mode and echo
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);	// Set new terminal settings
-    read(STDIN_FILENO, &ch, 1);					// Read a single character from stdin
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);	// Restore the old terminal settings
-    return ch;
-}
-
 
 void get_password(char *password_str, uint16_t max_length) {
 	fflush(stdout);
