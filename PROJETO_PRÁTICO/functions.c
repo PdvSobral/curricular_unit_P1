@@ -338,10 +338,10 @@ void cabecalho(const char msg[], uint8_t len_cabecalho){
 	} printf("┘\n");
 	return;
 };
-void reset_line(){
+void reset_line(uint8_t len_cabecalho){
 	set_cursor();
 	printf("\033[Am\033[0G");  // up one line and beggining
-	printf("├\033[%uC┤\n", CABECALHO_LEN-2);  // replace the line and return to where it was
+	printf("├\033[%uC┤\n", len_cabecalho-2);  // replace the line and return to where it was
 	reset_cursor();
 	return;
 };
@@ -361,7 +361,7 @@ int64_t menu(const char tittle[], uint8_t len_cabecalho, const char menu_options
 	uint8_t numeric_flag = 0;
 	while(1){
 		cabecalho(tittle, len_cabecalho);
-		reset_line();
+		reset_line(len_cabecalho);
 		char buffer[5];
 		for(uint8_t _index=0; _index<menu_size; _index++) {
 			if(_index+last_zero == menu_size){
