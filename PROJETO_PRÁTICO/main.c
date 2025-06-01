@@ -93,7 +93,7 @@ void print_account_data(ACCOUNT* data){
 		printf("Name Offset: %d\n", data->name_offset);
 	}
 
-uint8_t login(uint8_t account_flag_type){
+uint8_t login2(uint8_t account_flag_type){
 	char buffer[26];
 	uint8_t flag=0;
 	uint32_t account_id;
@@ -159,7 +159,7 @@ uint8_t login(uint8_t account_flag_type){
 	return 0;  // sucessfull
 }
 
-uint8_t login2(uint8_t account_flag_type){
+uint8_t login(uint8_t account_flag_type){
 	clear_screen();
 	cabecalho("LOGIN MENU", CABECALHO_LEN);
 	reset_line(CABECALHO_LEN);
