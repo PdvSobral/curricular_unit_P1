@@ -13,6 +13,8 @@ This file contains the types used throughout this work.
 #pragma once
 #endif
 
+#include "linked_lists.c"
+
 typedef struct _account{
 	uint32_t uid;      		// Unique ID, normal unsigned int for now
 	uint32_t name_offset;	// Name pos in the database file until newline (uint32_t serves for files up to 4GB)

@@ -95,10 +95,10 @@ void print_account_data(ACCOUNT* data){
 
 uint8_t login(uint8_t account_flag_type){
 	clear_screen();
-	cabecalho("LOGIN MENU", CABECALHO_LEN);
+	cabecalho("LOGIN ", CABECALHO_LEN);
 	reset_line(CABECALHO_LEN);
-	printf("│ [*] Account ID  :");
-	printf("\033[%uC│\n", CABECALHO_LEN - 20);
+	printf("│ [*] Account ID:");
+	printf("\033[%uC│\n", CABECALHO_LEN - 18);
 	printf("│ [ ] Password:");
 	printf("\033[%uC│\n", CABECALHO_LEN - 16);
 	for (uint8_t i = 0; i < CABECALHO_LEN; i++) printf("─");
@@ -110,7 +110,7 @@ uint8_t login(uint8_t account_flag_type){
 	for(uint8_t _index = 0; _index<CABECALHO_LEN-2; _index++){
 		printf("─");
 	} printf("┘");
-	printf("\033[4A\033[999D\033[20C");
+	printf("\033[4A\033[999D\033[18C");
 	fflush(stdout);
 	uint8_t state=0; //0 - account is  | 1 - password id   | login 'button'
 	uint8_t temp;
@@ -125,7 +125,7 @@ uint8_t login(uint8_t account_flag_type){
 				if ((ch = getch()) == 65 && state != 0){  // up arrow pressed
 					// printf("↑");
 					switch(state){
-						case 1: printf("\033[999D\033[3C \033[1A\033[5D\033[3C*\033[%dC", 16 + strlen2(account_id)); break;
+						case 1: printf("\033[999D\033[3C \033[1A\033[5D\033[3C*\033[%dC", 14 + strlen2(account_id)); break;
 						case 2: printf(" \033[1D\033[2A*\033[%dC", 12 + strlen2(password)); break;
 						case 3: printf(" \033[13D*\033[1D"); break;
 					}
@@ -145,7 +145,7 @@ uint8_t login(uint8_t account_flag_type){
 		else {
 			if (state == 0 && strlen2(account_id) <= 5){
 				// printf("%d", ch);
-				if ((ch == 0x08 || ch == 0x7F) && strlen2(account_id) != 0){   //  Delete and backspace
+				if ((ch == 0x08 || ch == 0x7F)){   //  Delete and backspace
 					if (strlen2(account_id) > 0){
 						printf("\033[1D \033[1D");
 						temp = strlen2(account_id);
@@ -162,7 +162,7 @@ uint8_t login(uint8_t account_flag_type){
 			}
 			if (state == 1 && strlen2(password) <= MAX_PASSWORD_LENGTH){
 				//printf("%d ", ch);
-				if ((ch == 0x08 || ch == 0x7F) && strlen2(password) != 0){   //  Delete and backspace
+				if ((ch == 0x08 || ch == 0x7F)){   //  Delete and backspace
 					if (strlen2(password) > 0){
 						printf("\033[1D \033[1D");
 						temp = strlen2(password);
