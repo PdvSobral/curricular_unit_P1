@@ -7,10 +7,7 @@ const char* USER_DATABASE = "./assets/sys_shadow.csv";
 #include "database_helper.c"
 #include "md5.c"
 
-static ACCOUNT CURRENT_LOGIN = {0, 999999999, 2, ""};
-
-
-uint8_t regist(uint8_t account_flag_type){
+uint8_t regist(){
 	clear_screen();
 	cabecalho("REGISTER ACCOUNT", CABECALHO_LEN);
 	reset_line(CABECALHO_LEN);
@@ -40,28 +37,26 @@ uint8_t regist(uint8_t account_flag_type){
 	char md5_hash[33];
 	while (1){
 		// chars especiais tipo setas
-		if ((ch = getch()) == 27) {
-			if ((ch = getch()) == 91) {
-				if ((ch = getch()) == 65 && state != 0){  // up arrow pressed
-					// printf("↑");
-					switch(state){
-						case 1: printf("\033[999D\033[3C \033[1A\033[5D\033[3C*\033[%dC", 14 + strlen2(account_id)); break;
-						case 2: printf("\033[999D\033[3C \033[1A\033[5D\033[3C*\033[%dC", 12 + strlen2(password)); break;
-						case 3: printf(" \033[1D\033[2A*\033[%dC", 19 + strlen2(password2)); break;
-						case 4: printf(" \033[13D*\033[1D"); break;
-					}
-					state--;
+		if (((ch = getch()) == 27) && ((ch = getch()) == 91)) {
+			if (((ch = getch()) == 65 || ch == 68 )&& state != 0){  // up arrow pressed
+				// printf("↑");
+				switch(state){
+					case 1: printf("\033[999D\033[3C \033[1A\033[5D\033[3C*\033[%dC", 14 + strlen2(account_id)); break;
+					case 2: printf("\033[999D\033[3C \033[1A\033[5D\033[3C*\033[%dC", 12 + strlen2(password)); break;
+					case 3: printf(" \033[1D\033[2A*\033[%dC", 19 + strlen2(password2)); break;
+					case 4: printf(" \033[13D*\033[1D"); break;
 				}
-				else if (ch == 66 && state != 4){		 // down arrow pressed
-					// printf("↓");
-					switch(state){
-						case 0: printf("\033[999D\033[3C \033[1B\033[5D\033[3C*\033[%dC", 12 + strlen2(password)); break;
-						case 1: printf("\033[999D\033[3C \033[1B\033[5D\033[3C*\033[%dC", 19 + strlen2(password2)); break;
-						case 2: printf("\033[999D\033[3C \033[2B\033[5D\033[3C*\033[1D"); break;
-						case 3: printf(" \033[11C*\033[1D"); break;
-					}
-					state++;
+				state--;
+			}
+			else if ((ch == 66 || ch == 67) && state != 4){		 // down arrow pressed
+				// printf("↓");
+				switch(state){
+					case 0: printf("\033[999D\033[3C \033[1B\033[5D\033[3C*\033[%dC", 12 + strlen2(password)); break;
+					case 1: printf("\033[999D\033[3C \033[1B\033[5D\033[3C*\033[%dC", 19 + strlen2(password2)); break;
+					case 2: printf("\033[999D\033[3C \033[2B\033[5D\033[3C*\033[1D"); break;
+					case 3: printf(" \033[11C*\033[1D"); break;
 				}
+				state++;
 			}
 		}
 		else {
@@ -147,12 +142,11 @@ uint8_t regist(uint8_t account_flag_type){
 									printf("\033[4A\033[3C");
 								} else {
 									ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id);
-									hash_md5(password, md5_hash);
-									if (my_user == NULL || my_user->type != account_flag_type || strcmp(my_user->password, md5_hash)!=0){
+									if (my_user == NULL){
 										free(my_user);
 										printf("\n\n");
 										reset_line(CABECALHO_LEN);
-										print_between_format("INVALID CREDENTIALS!", "\033[32m", CABECALHO_LEN, 1);
+										print_between_format("User does not exist!", "\033[32m", CABECALHO_LEN, 1);
 										print_bottom(CABECALHO_LEN, 1);
 										printf("\033[4A\033[3C");
 									} else {
