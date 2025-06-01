@@ -127,7 +127,6 @@ uint8_t login(uint8_t account_flag_type){
 		return 1;
 	}
 	// else print_account_data(my_user);
-	// TODO: De alguma forma registar a conta "logada" atualmente
 	printf("Login Sucessfull as '");
 	print_name(USER_DATABASE, my_user->name_offset);
 	printf("'!\n");
