@@ -53,7 +53,7 @@ int main2(){
 		else {
 			if (state == 0 && strlen2(account_id) <= 5){
 				// printf("%d", ch);
-				if ((ch == 0x08 || ch == 0x7F) &&  != 0){   //  Delete and backspace
+				if ((ch == 0x08 || ch == 0x7F) && strlen2(account_id) != 0){   //  Delete and backspace
 					if (strlen2(account_id) > 0){
 						printf("\033[1D \033[1D");
 						temp = strlen2(account_id);
@@ -68,16 +68,16 @@ int main2(){
 					}
 				}
 			}
-			if (state == 1 && strlen2(password) < MAX_PASSWORD_LENGTH){
+			if (state == 1 && strlen2(password) <= MAX_PASSWORD_LENGTH){
 				//printf("%d ", ch);
-				if ((ch == 0x08 || ch == 0x7F) &&  != 0){   //  Delete and backspace
+				if ((ch == 0x08 || ch == 0x7F) && strlen2(password) != 0){   //  Delete and backspace
 					if (strlen2(password) > 0){
 						printf("\033[1D \033[1D");
 						temp = strlen2(password);
 						password[temp-1] = 0x00;
 					}
 				} else {
-					if (ch >= 0x20 || (int32_t) ch < 0x00){
+					if ((ch >= 0x20 || (int32_t) ch < 0x00) && strlen2(password) < MAX_PASSWORD_LENGTH){
 						putchar('*');
 						temp = strlen2(password);
 						password[temp] = ch;
