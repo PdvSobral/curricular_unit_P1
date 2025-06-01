@@ -202,7 +202,7 @@ uint8_t login(uint8_t account_flag_type){
 							} else {
 								ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id);
 								hash_md5(password, md5_hash);
-								if (my_user == NULL || my_user->type == account_flag_type || strcmp(my_user->password, md5_hash)!=0){
+								if (my_user == NULL || my_user->type != account_flag_type || strcmp(my_user->password, md5_hash)!=0){
 									free(my_user);
 									printf("\n\n");
 									reset_line(CABECALHO_LEN);
@@ -430,8 +430,8 @@ int32_t main(void){
 		escolha_menu = menu("PLEASE CHOOSE ACCOUNT TYPE", CABECALHO_LEN, main_menu, len_main_menu, 1);
 		if(escolha_menu==0) break;
 		switch(escolha_menu){
-			case 1: if(login(0)==0) biblman_account(); break;
-			case 2: if(login(1)==0) student_account(); break;
+			case 1: if(login(1)==0) biblman_account(); break;
+			case 2: if(login(0)==0) student_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
 	}

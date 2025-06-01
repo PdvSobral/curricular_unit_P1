@@ -139,24 +139,29 @@ uint8_t regist(uint8_t account_flag_type){
 								print_bottom(CABECALHO_LEN, 1);
 								printf("\033[4A\033[3C");
 							} else {
-								ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id);
-								hash_md5(password, md5_hash);
-								if (my_user == NULL || my_user->type == account_flag_type || strcmp(my_user->password, md5_hash)!=0){
-									free(my_user);
+								if (strcmp(password, password2) != 0){
 									printf("\n\n");
 									reset_line(CABECALHO_LEN);
-									print_between_format("INVALID CREDENTIALS!", "\033[31m", CABECALHO_LEN, 1);
+									print_between_format("Passwords do not match!", "\033[31m", CABECALHO_LEN, 1);
 									print_bottom(CABECALHO_LEN, 1);
 									printf("\033[4A\033[3C");
 								} else {
-									printf("\n\n");
-									reset_line(CABECALHO_LEN);
-									print_between_format("LOGIN SUCESSFUL!", "\033[32m", CABECALHO_LEN, 1);
-									print_bottom(CABECALHO_LEN, 1);
-									CURRENT_LOGIN = *my_user;
-									free(my_user);
-									pause_();
-									return 0;  // sucessfull
+									ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id);
+									hash_md5(password, md5_hash);
+									if (my_user == NULL || my_user->type != account_flag_type || strcmp(my_user->password, md5_hash)!=0){
+										free(my_user);
+										printf("\n\n");
+										reset_line(CABECALHO_LEN);
+										print_between_format("INVALID CREDENTIALS!", "\033[32m", CABECALHO_LEN, 1);
+										print_bottom(CABECALHO_LEN, 1);
+										printf("\033[4A\033[3C");
+									} else {
+										printf("\n\n");
+										reset_line(CABECALHO_LEN);
+										print_between_format("User already exists!", "\033[31m", CABECALHO_LEN, 1);
+										print_bottom(CABECALHO_LEN, 1);
+										printf("\033[4A\033[3C");
+									}
 								}
 							}
 						}
@@ -177,6 +182,73 @@ uint8_t regist(uint8_t account_flag_type){
 	return 1;
 }
 
+/*
+uint8_t regist() {
+    char buffer[LEN_NAME];		// string maior a ser lida
+    char account_id_str[6];
+	char password1[MAX_PASSWORD_LENGTH + 1];
+    char md5_hash[33];
+    uint8_t account_type;
+	// TODO: Add confirmations to retype or return to menu.
+    char name[LEN_NAME + 1];
+    uint8_t flag;
+    int64_t account_id;
+    // 1. Account ID
+    while (1) {
+        printf("Account ID (5 digits): ");
+        read_n_chars(5, buffer);
+        buffer[5] = '\0';
+        account_id = str_to_int64_t_flag(buffer, &flag);
+        if (strlen2(buffer) != 5 || flag != 1) {
+            printf("Invalid ID!\n");
+            return 1;
+        }
+		ACCOUNT* my_user = get_user_by_id(USER_DATABASE, buffer);
+		if(my_user == NULL){
+			strcpy(account_id_str, buffer);
+			free(my_user);
+        	break;
+		}
+		printf("Account ID already exists!\n");
+        free(my_user);
+    }
+    // 2. Password
+    while (1) {
+        printf("Password: ");
+        get_password(buffer, MAX_PASSWORD_LENGTH);
+		strcpy(password1, buffer);
+        if (strlen2(buffer) > 0 && strlen2(buffer) <= MAX_PASSWORD_LENGTH){
+			printf("Confirm Password: ");
+        	get_password(buffer, MAX_PASSWORD_LENGTH);
+			if(strcmp(password1, buffer) == 0) break;
+			printf("Password is not the same!\n");
+			return 1;
+		}
+		printf("Password too long or empty.\n");
+        return 1;
+	}
+	hash_md5(buffer, md5_hash);
+    // 3. Tipo de Conta
+    while (1) {
+        printf("Choose account type (Librarian: 1, Student: 0): ");
+        read_n_chars(1, buffer);
+        account_type = buffer[0] - 0x30;
+        if (account_type == 0 || account_type == 1) break;
+        printf("Invalid account type.\n");
+    }
+    // 4. Nome completo
+    printf("Full name: ");
+    read_n_chars(LEN_NAME, name);
+    // 5. Escrever no CSV
+    FILE* file = fopen("assets/sys_shadow.csv", "a");
+    if (file == NULL) return 1;
+    fprintf(file, "%05ld:%s:%1u:%s\n", account_id, md5_hash, account_type, name);
+    fclose(file);
+    printf("Account registered successfully.\n");
+    pause_();
+    return 0;
+}
+*/
 
 int main(){
 	uint8_t returned;
