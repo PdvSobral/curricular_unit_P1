@@ -276,7 +276,8 @@ uint8_t login(uint8_t account_flag_type){
 									print_bottom(CABECALHO_LEN, 1);
 									printf("\033[4A\033[3C");
 								} else {
-									print_middle(CABECALHO_LEN, 1);
+									printf("\n\n");
+									reset_line(CABECALHO_LEN);
 									print_between_format("LOGIN SUCESSFUL!", "\033[32m", CABECALHO_LEN, 1);
 									print_bottom(CABECALHO_LEN, 1);
 									CURRENT_LOGIN = *my_user;
