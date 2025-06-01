@@ -412,13 +412,17 @@ void get_password(char *password_str, uint16_t max_length) {
     while(1) {
         ch = getch();
         if (ch == 0x0A) break;
-        else if ((ch == 0x08 || ch == 0x7F) && current_length > 0) { // Backspace and Delete
-            current_length--;
-            printf("\b \b"); // remove the last char and move back
+        else if ((ch == 0x08 || ch == 0x7F)) { // Backspace and Delete
+        	if (current_length > 0){
+				current_length--;
+				printf("\033[1D \033[1D"); // remove the last char and move back
+			}
         }
         else if (current_length < max_length) {
-            password_str[current_length++] = ch;
-            printf("*"); // Print asterisks for each character
+        	if (ch >= 0x20 || (int32_t) ch < 0x00){
+				putchar('*');
+				password_str[current_length++] = ch;
+			}
         }
         fflush(stdout);
     }
@@ -443,7 +447,7 @@ uint8_t confirmation_with_cabecalho(char* cabecalho_msg, char* main_msg, uint8_t
 	} printf("┘");
 	printf("\033[1A\033[999D\033[3C");
 	fflush(stdout);
-	uint8_t state=0; //0 - account is  | 1 - password id   | login 'button'
+	uint8_t state=0; //0 - yes 1 - no
 	char ch;
 	while (1){
 		// chars especiais tipo setas
@@ -467,6 +471,85 @@ uint8_t confirmation_with_cabecalho(char* cabecalho_msg, char* main_msg, uint8_t
 	}
 }
 
+uint8_t confirmation(char* main_msg, uint8_t len_cabecalho, uint8_t print_line){
+	if (print_line==1) for(uint8_t _index = 0; _index<len_cabecalho; _index++) printf("─");
+	reset_line(len_cabecalho);
+	printf("│ %s", main_msg);
+	printf("\033[%uC│\n", len_cabecalho - 3 - strlen2(main_msg));
+	for (uint8_t i = 0; i < len_cabecalho; i++) printf("─");
+	printf("\n");
+	reset_line(len_cabecalho);
+	printf("│ [*] Yes     [ ] No");
+	printf("\033[%uC│\n", len_cabecalho - 21);
+	printf("└");
+	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++){
+		printf("─");
+	} printf("┘");
+	printf("\033[1A\033[999D\033[3C");
+	fflush(stdout);
+	uint8_t state=0; //0 - yes 1 - no
+	char ch;
+	while (1){
+		// chars especiais tipo setas
+		if (((ch = getch()) == 27) && ((ch = getch()) == 91)) {
+			if (((ch = getch()) == 65 || ch == 68) && state != 0){  // up arrow and left arrow pressed
+				printf(" \033[13D*\033[1D");
+				state--;
+			}
+			else if ((ch == 66 || ch == 67) && state != 1){ // down arrow and right arrow pressed
+				printf(" \033[11C*\033[1D");
+				state++;
+			}
+		}
+		else {
+			if (ch == 0x0A){
+				printf("\n\n");
+				return state;
+			}
+		}
+		fflush(stdout);
+	}
+}
+
+void print_between(char* str, uint8_t len_cabecalho, uint8_t newline){
+	printf("│ %s", str);
+	for(uint8_t i=0; i < len_cabecalho-3-strlen2(str); i++) printf(" ");
+	printf("│");
+	if (newline == 1) printf("\n");
+	return;
+}
+
+void print_between_format(char* str, char* format, uint8_t len_cabecalho, uint8_t newline){
+	printf("│ %s%s\033[0m", format, str);
+	for(uint8_t i=0; i < len_cabecalho-3-strlen2(str); i++) printf(" ");
+	printf("│");
+	if (newline == 1) printf("\n");
+	return;
+}
+
+void print_bottom(uint8_t len_cabecalho, uint8_t newline){
+	printf("└");
+	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++) printf("─");
+	printf("┘");
+	if (newline == 1) printf("\n");
+	return;
+}
+
+void print_upper(uint8_t len_cabecalho, uint8_t newline){
+	printf("┌");
+	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++) printf("─");
+	printf("┐");
+	if (newline == 1) printf("\n");
+	return;
+}
+
+void print_middle(uint8_t len_cabecalho, uint8_t newline){
+	printf("├");
+	for(uint8_t _index = 0; _index<len_cabecalho-2; _index++) printf("─");
+	printf("┤");
+	if (newline == 1) printf("\n");
+	return;
+}
 
 #ifdef __functions_c__
 	int main(){

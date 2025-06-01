@@ -99,37 +99,60 @@ uint8_t login(uint8_t account_flag_type){
 	uint32_t account_id;
 	char account_id_str[6];
 	char md5_hash[33];
+	char header[CABECALHO_LEN];
+	char header2[CABECALHO_LEN+1]; // to shut up a warning
 	while (1){
-		printf("Account ID: ");
+		clear_screen();
+		snprintf(header, sizeof(header), "LOGIN AS %s", account_flag_type == 0 ? "LIBRARIAN" : "STUDENT");
+		cabecalho(header, CABECALHO_LEN);
+		reset_line(CABECALHO_LEN);
+		print_between("Account ID: ", CABECALHO_LEN, 1);
+		print_bottom(CABECALHO_LEN, 0);
+		printf("\033[%uD\033[1A", CABECALHO_LEN - 14);
 		read_n_chars(6, buffer);
 		account_id = (int64_t) str_to_int64_t_flag(buffer, &flag);
 		if (flag==1 && account_id <= 99999 && strlen2(buffer)==5) break;
-		printf("Invalid ID!\n");
-		printf("Do you wish to retype the ID (1) or return to the menu (any other value)? -> ");
-		read_n_chars(2, buffer);
-		account_id = str_to_int64_t(buffer);
-		if(!(account_id==1)) return 1;
+		clear_screen();
+		snprintf(header, sizeof(header), "INVALID ID '%s'!", buffer);
+		if (strlen2(header) % 2 != 0) snprintf(header2, sizeof(header2), "%s ", header);
+		else strcpy(header2, header);
+		account_id = confirmation_with_cabecalho(header2, "Do you wish to input a new ID?", CABECALHO_LEN);
+		if(!(account_id==0)) return 1;
 	} strcpy(account_id_str, buffer);
 	while (1){
-		printf("Password: ");
+		clear_screen();
+		snprintf(header, sizeof(header), "LOGIN AS %s", account_flag_type == 0 ? "LIBRARIAN" : "STUDENT");
+		cabecalho(header, CABECALHO_LEN);
+		reset_line(CABECALHO_LEN);
+		snprintf(header, sizeof(header), "Account ID: %s", account_id_str);
+		print_between(header, CABECALHO_LEN, 1);
+		print_between("Password: ", CABECALHO_LEN, 1);
+		print_bottom(CABECALHO_LEN, 0);
+		printf("\033[%uD\033[1A", CABECALHO_LEN - 12);
 		get_password(buffer, MAX_PASSWORD_LENGTH);
 		if (strlen2(buffer) <= MAX_PASSWORD_LENGTH) break;
-		printf("Invalid password type for system!\n");
-		pause_();
-		return 1;
+		clear_screen();
+		account_id = confirmation_with_cabecalho("INVALID PASSWORD TYPE FOR SYSTEM", "Do you wish to re-input the password?", CABECALHO_LEN);
+		if(!(account_id==0)) return 1;
 	}
 	ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id_str);
 	hash_md5(buffer, md5_hash);
 	if (my_user == NULL || my_user->type == account_flag_type || strcmp(my_user->password, md5_hash)!=0){
 		free(my_user);
-		printf("INVALID CREDENTIALS!\n");
+		print_middle(CABECALHO_LEN, 1);
+		print_between_format("INVALID CREDENTIALS!", "\033[31m", CABECALHO_LEN, 1);
+		print_bottom(CABECALHO_LEN, 1);
 		pause_();
 		return 1;
 	}
-	// else print_account_data(my_user);
+	/*
 	printf("Login Sucessfull as '");
 	print_name(USER_DATABASE, my_user->name_offset);
 	printf("'!\n");
+	*/
+	print_middle(CABECALHO_LEN, 1);
+	print_between_format("LOGIN SUCESSFUL!", "\033[32m", CABECALHO_LEN, 1);
+	print_bottom(CABECALHO_LEN, 1);
 	CURRENT_LOGIN = *my_user;
 	free(my_user);
 	pause_();
