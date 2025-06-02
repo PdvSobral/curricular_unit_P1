@@ -321,9 +321,11 @@ uint8_t reset_password(){
 	overwrite_password(USER_DATABASE, user->name_offset, "5f4dcc3b5aa765d61d8327deb882cf99");
 	free(user);
 }
-
+/// TODO: 
 uint8_t change_password(){
-	uint8_t account_id=CURRENT_LOGIN.uid;
+	uint8_t account_id_temp=CURRENT_LOGIN.uid;
+	char account_id[6];
+	 snprintf(account_id, sizeof(account_id), "%u", account_id_temp);
 	char password[MAX_PASSWORD_LENGTH], buffer[MAX_PASSWORD_LENGTH];
 	char md5_hash[33];
 	 while (1) {
@@ -336,7 +338,7 @@ uint8_t change_password(){
 			if(strcmp(password, buffer) == 0){
 				hash_md5(buffer, md5_hash);
 				ACCOUNT* user=get_user_by_id(USER_DATABASE, account_id);
-				overwrite_password(USER_DATABASE, CURRENT_LOGIN.uid, md5_hash);
+				overwrite_password(USER_DATABASE, user->name_offset, md5_hash);
 				break;
 			} 
 			printf("Password is not the same!\n");
