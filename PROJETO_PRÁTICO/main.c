@@ -314,12 +314,31 @@ uint8_t regist() {
 }
 
 uint8_t reset_password(){
-	uint8_t account_id[5];
+	char account_id[6];
 	printf("ID Account: ");
 	read_n_chars(5, account_id);
 	ACCOUNT* user=get_user_by_id(USER_DATABASE, account_id);
-	overwrite_password(USER_DATABASE, user->name_offset);
+	overwrite_password(USER_DATABASE, user->name_offset, "5f4dcc3b5aa765d61d8327deb882cf99");
 	free(user);
+}
+
+uint8_t change_password(){
+	uint8_t account_id=CURRENT_LOGIN.uid;
+	char password[MAX_PASSWORD_LENGTH], buffer[MAX_PASSWORD_LENGTH];
+	char md5_hash[33];
+	printf("New Password: ");
+	get_password(buffer, MAX_PASSWORD_LENGTH);
+	strcpy(password, buffer);
+	if (strlen2(password) > 0 && strlen2(password) <= MAX_PASSWORD_LENGTH){
+			printf("Confirm Password: ");
+        	get_password(buffer, MAX_PASSWORD_LENGTH);
+			if(strcmp(password, buffer) == 0) return 0;
+			printf("Password is not the same!\n");
+			pause_();
+			return 1;
+		}
+		printf("Password too long or empty.\n");
+        return 1;
 }
 
 // MENUS
@@ -338,6 +357,7 @@ void mng_student_account(){
 		if(_escolha_menu==0) break;
 		clear_screen();
 		switch(_escolha_menu){
+			case 2: change_password(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
 	}

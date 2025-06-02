@@ -126,9 +126,8 @@ void print_name(const char* database_name, uint32_t name_offset){
 	return;
 }
 
-void overwrite_password(const char* database_name, uint32_t name_offset){
+void overwrite_password(const char* database_name, uint32_t name_offset, char* buffer){
 	FILE* file;
-	char* buffer = "5f4dcc3b5aa765d61d8327deb882cf99"; // password hash default (pass='password')
 	file = fopen(database_name, "rb+");
 	if (file == NULL) return;
 	fseek(file, name_offset-35, SEEK_SET);
