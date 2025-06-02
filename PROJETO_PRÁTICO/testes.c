@@ -143,7 +143,6 @@ uint8_t regist(){
 								} else {
 									ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id);
 									if (my_user == NULL){
-										free(my_user);
 										printf("\n\n");
 										reset_line(CABECALHO_LEN);
 										print_between_format("User available and passwords match!", "\033[32m", CABECALHO_LEN, 1);
