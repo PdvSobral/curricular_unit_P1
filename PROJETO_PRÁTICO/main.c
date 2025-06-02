@@ -74,7 +74,7 @@ const char biblman_account_menu[][CABECALHO_LEN] = {
 	"Manage system",
 	"Logout"
 };
-const uint8_t len_mng_biblman_account_menu = 7;
+const uint8_t len_mng_biblman_account_menu = 8;
 const char mng_biblman_account_menu[][CABECALHO_LEN] = {
 	"Add book",
 	"Remove book",
@@ -82,6 +82,7 @@ const char mng_biblman_account_menu[][CABECALHO_LEN] = {
 	"Remove old return history entries",
 	"Create new account",
 	"Reset password to an account",
+	"Change current account password",
 	"Return to main menu"
 };
 
