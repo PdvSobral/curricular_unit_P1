@@ -123,7 +123,7 @@ uint8_t regist(){
 						if (strlen2(account_id) < 5){
 							printf("\n\n");
 							reset_line(CABECALHO_LEN);
-							print_between_format("Invalid account ID!", "\033[31m", CABECALHO_LEN, 1);
+							print_between_format("Invalid account ID (5 characters needed)!", "\033[31m", CABECALHO_LEN, 1);
 							print_bottom(CABECALHO_LEN, 1);
 							printf("\033[4A\033[3C");
 						} else {
@@ -146,9 +146,9 @@ uint8_t regist(){
 										free(my_user);
 										printf("\n\n");
 										reset_line(CABECALHO_LEN);
-										print_between_format("User does not exist!", "\033[32m", CABECALHO_LEN, 1);
-										print_bottom(CABECALHO_LEN, 1);
-										printf("\033[4A\033[3C");
+										print_between_format("User available and passwords match!", "\033[32m", CABECALHO_LEN, 1);
+										print_between_format("Please enter your name now:", "\033[32m", CABECALHO_LEN, 1);
+										break;
 									} else {
 										printf("\n\n");
 										reset_line(CABECALHO_LEN);
@@ -172,8 +172,11 @@ uint8_t regist(){
 		}
 		fflush(stdout);
 	}
-	// Not suposed to get here
-	return 1;
+	// TODO: Ask for name and write it directly to the file, for know static
+	print_between_format("->", "\033[32m", CABECALHO_LEN, 1);
+	print_bottom(CABECALHO_LEN, 1);
+	pause_();
+	return 0;
 }
 
 /*
@@ -183,7 +186,6 @@ uint8_t regist() {
 	char password1[MAX_PASSWORD_LENGTH + 1];
     char md5_hash[33];
     uint8_t account_type;
-	// TODO: Add confirmations to retype or return to menu.
     char name[LEN_NAME + 1];
     uint8_t flag;
     int64_t account_id;
