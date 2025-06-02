@@ -313,6 +313,15 @@ uint8_t regist() {
     return 0;
 }
 
+uint8_t reset_password(){
+	uint8_t account_id[5];
+	printf("ID Account: ");
+	read_n_chars(5, account_id);
+	ACCOUNT* user=get_user_by_id(USER_DATABASE, account_id);
+	overwrite_password(USER_DATABASE, user->name_offset);
+	free(user);
+}
+
 // MENUS
 void mng_student_account(){
 	/*
@@ -377,6 +386,7 @@ void mng_biblman_account(){
 		if(_escolha_menu==0) break;
 		switch(_escolha_menu){
 			case 5: regist(); break;
+			case 6: reset_password(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
 	}
