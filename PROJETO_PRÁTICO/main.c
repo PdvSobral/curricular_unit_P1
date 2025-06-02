@@ -86,13 +86,6 @@ const char mng_biblman_account_menu[][CABECALHO_LEN] = {
 };
 
 // FUNÇÕES
-void print_account_data(ACCOUNT* data){
-		printf("uID: %d\n", data->uid);
-		printf("MD5: %s\n", data->password);
-		printf("Type: %s\n", data->type==1?"Librarian":"Student");
-		printf("Name Offset: %d\n", data->name_offset);
-	}
-
 uint8_t login(uint8_t account_flag_type){
 	clear_screen();
 	cabecalho("LOGIN ", CABECALHO_LEN);
@@ -313,7 +306,7 @@ uint8_t regist() {
     return 0;
 }
 
-uint8_t reset_password(){
+void reset_password(){
 	char account_id[6];
 	printf("ID Account: ");
 	read_n_chars(5, account_id);
@@ -321,34 +314,33 @@ uint8_t reset_password(){
 	overwrite_password(USER_DATABASE, user->name_offset, "5f4dcc3b5aa765d61d8327deb882cf99");
 	free(user);
 }
-// TODO: Change current implementation to new revision present in testes.c of comit by PdvSobral in 22:15 02-06-2025
+
 uint8_t change_password(){
-	uint8_t account_id_temp=CURRENT_LOGIN.uid;
-	char account_id[6];
-	 snprintf(account_id, sizeof(account_id), "%u", account_id_temp);
 	char password[MAX_PASSWORD_LENGTH], buffer[MAX_PASSWORD_LENGTH];
 	char md5_hash[33];
-	 while (1) {
-        printf(" New Password: ");
-        get_password(buffer, MAX_PASSWORD_LENGTH);
+	while(1) {
+		printf("New Password: ");
+		get_password(buffer, MAX_PASSWORD_LENGTH);
 		strcpy(password, buffer);
-        if (strlen2(buffer) > 0 && strlen2(buffer) <= MAX_PASSWORD_LENGTH){
+		if (strlen2(buffer) > 0 && strlen2(buffer) <= MAX_PASSWORD_LENGTH){
 			printf("Confirm Password: ");
-        	get_password(buffer, MAX_PASSWORD_LENGTH);
-			if(strcmp(password, buffer) == 0){
-				hash_md5(buffer, md5_hash);
-				ACCOUNT* user=get_user_by_id(USER_DATABASE, account_id);
-				overwrite_password(USER_DATABASE, user->name_offset, md5_hash);
-				break;
-			} 
+			get_password(buffer, MAX_PASSWORD_LENGTH);
+			if(strcmp(password, buffer) == 0) break;
 			printf("Password is not the same!\n");
 			pause_();
+		} else {
+			printf("Password too long or empty.\n");
 			return 1;
 		}
-		printf("Password too long or empty.\n");
-        return 1;
 	}
+	printf("Passwords equal, proceding with overwrite...\n");
 	hash_md5(buffer, md5_hash);
+	overwrite_password(USER_DATABASE, CURRENT_LOGIN.name_offset, md5_hash);
+	printf("Automaticly reloggin in...\n");  // maoir mentira de sempre, mas pronto
+	strcpy(CURRENT_LOGIN.password, md5_hash);
+	printf("Update sucessfull!\n");
+	pause_();
+	return 0;
 }
 
 // MENUS
