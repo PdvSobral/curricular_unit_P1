@@ -324,21 +324,24 @@ uint8_t reset_password(){
 
 uint8_t change_password(){
 	uint8_t account_id=CURRENT_LOGIN.uid;
-	char password[MAX_PASSWORD_LENGTH], buffer[MAX_PASSWORD_LENGTH];
+	char password[MAX_PASSWORD_LENGTH], buffer[LEN_NAME];
 	char md5_hash[33];
-	printf("New Password: ");
-	get_password(buffer, MAX_PASSWORD_LENGTH);
-	strcpy(password, buffer);
-	if (strlen2(password) > 0 && strlen2(password) <= MAX_PASSWORD_LENGTH){
+	 while (1) {
+        printf(" New Password: ");
+        get_password(buffer, MAX_PASSWORD_LENGTH);
+		strcpy(password, buffer);
+        if (strlen2(buffer) > 0 && strlen2(buffer) <= MAX_PASSWORD_LENGTH){
 			printf("Confirm Password: ");
         	get_password(buffer, MAX_PASSWORD_LENGTH);
-			if(strcmp(password, buffer) == 0) return 0;
+			if(strcmp(password, buffer) == 0) break;
 			printf("Password is not the same!\n");
 			pause_();
 			return 1;
 		}
 		printf("Password too long or empty.\n");
         return 1;
+	}
+	hash_md5(buffer, md5_hash);
 }
 
 // MENUS
