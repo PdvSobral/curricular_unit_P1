@@ -206,6 +206,7 @@ uint8_t regist() {
         	get_password(buffer, MAX_PASSWORD_LENGTH);
 			if(strcmp(password1, buffer) == 0) break;
 			printf("Password is not the same!\n");
+			pause_();
 			return 1;
 		}
 		printf("Password too long or empty.\n");
