@@ -321,7 +321,7 @@ uint8_t reset_password(){
 	overwrite_password(USER_DATABASE, user->name_offset, "5f4dcc3b5aa765d61d8327deb882cf99");
 	free(user);
 }
-/// TODO: 
+// TODO: Change current implementation to new revision present in testes.c of comit by PdvSobral in 22:15 02-06-2025
 uint8_t change_password(){
 	uint8_t account_id_temp=CURRENT_LOGIN.uid;
 	char account_id[6];

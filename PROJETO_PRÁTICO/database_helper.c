@@ -136,14 +136,14 @@ void overwrite_password(const char* database_name, uint32_t name_offset, char* b
 	return;
 }
 
-#ifdef __database_helper__
-	void print_account_data(ACCOUNT* data){
+void print_account_data(ACCOUNT* data){
 		printf("uID: %d\n", data->uid);
 		printf("MD5: %s\n", data->password);
 		printf("Type: %s\n", data->type==1?"Librarian":"Student");
 		printf("Name Offset: %d\n", data->name_offset);
 	}
 
+#ifdef __database_helper__
 	int main() {
 		const char* filename = "./assets/sys_shadow.csv";
 		char to_check[10];
