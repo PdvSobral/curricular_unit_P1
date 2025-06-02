@@ -324,7 +324,7 @@ uint8_t reset_password(){
 
 uint8_t change_password(){
 	uint8_t account_id=CURRENT_LOGIN.uid;
-	char password[MAX_PASSWORD_LENGTH], buffer[LEN_NAME];
+	char password[MAX_PASSWORD_LENGTH], buffer[MAX_PASSWORD_LENGTH];
 	char md5_hash[33];
 	 while (1) {
         printf(" New Password: ");
@@ -333,7 +333,12 @@ uint8_t change_password(){
         if (strlen2(buffer) > 0 && strlen2(buffer) <= MAX_PASSWORD_LENGTH){
 			printf("Confirm Password: ");
         	get_password(buffer, MAX_PASSWORD_LENGTH);
-			if(strcmp(password, buffer) == 0) break;
+			if(strcmp(password, buffer) == 0){
+				hash_md5(buffer, md5_hash);
+				ACCOUNT* user=get_user_by_id(USER_DATABASE, account_id);
+				overwrite_password(USER_DATABASE, CURRENT_LOGIN.uid, md5_hash);
+				break;
+			} 
 			printf("Password is not the same!\n");
 			pause_();
 			return 1;
