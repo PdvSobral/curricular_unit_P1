@@ -410,6 +410,7 @@ void mng_biblman_account(){
 		switch(_escolha_menu){
 			case 5: regist(); break;
 			case 6: reset_password(); break;
+			case 7: change_password(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
 	}
