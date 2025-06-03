@@ -1,31 +1,19 @@
 //TODO: Review this GPT code
-#pragma GCC error " DO NOT COMPILE AND RUN, IT'S FULL GPT!!"
+#pragma GCC warning " DO NOT COMPILE AND RUN, IT'S FULL GPT!!"
+#define __main__
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <termios.h>
+#include "functions.c"
 
-#define MAX_INPUT 256
-#define FILE_PATH "./names.txt"
-
-// Enable raw mode to read char-by-char without Enter
-void enable_raw_mode(struct termios* orig_termios) {
-	struct termios raw;
-	tcgetattr(STDIN_FILENO, orig_termios);
-	raw = *orig_termios;
-	raw.c_lflag &= ~(ECHO | ICANON);
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-}
-
-// Restore terminal
-void disable_raw_mode(const struct termios* orig_termios) {
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, orig_termios);
-}
+#define MAX_INPUT 255
+#define FILE_PATH "./none.txt"
 
 // Returns the length in bytes of the UTF-8 character starting with byte ch
-int utf8_char_length(unsigned char ch) {
+int utf8_char_length(uint8_t ch) {
 	if (ch < 0x80) return 1;
 	else if ((ch >> 5) == 0x6) return 2;
 	else if ((ch >> 4) == 0xE) return 3;
@@ -34,65 +22,69 @@ int utf8_char_length(unsigned char ch) {
 }
 
 // Check if byte is a UTF-8 continuation byte (i.e., starts with 10xxxxxx)
-int is_utf8_continuation(unsigned char ch) {
+uint8_t is_utf8_continuation(uint8_t ch) {
 	return (ch & 0xC0) == 0x80;
 }
 
-void read_name_and_append_to_file() {
-	struct termios orig_termios;
-	enable_raw_mode(&orig_termios);
-
+uint8_t read_name_and_append_to_file(const char* file_name, uint8_t max_characters_length) {
 	printf("Enter name: ");
 	fflush(stdout);
-
-	unsigned char name[MAX_INPUT] = {0};
-	int len = 0;
-
-	while (1) {
-		unsigned char ch;
-		if (read(STDIN_FILENO, &ch, 1) != 1) break;
-
-		if (ch == 0x7F || ch == 0x08) {  // Backspace/Delete
-			if (len > 0) {
-				// Remove UTF-8 multibyte char correctly
-				do {
-					len--;
-				} while (len > 0 && is_utf8_continuation(name[len]));
-				name[len] = '\0';
-				printf("\b \b");  // Erase from screen
+	FILE* file = fopen(file_name, "rb+");
+	if (file == NULL) return 1;
+	fseek(file, 0, SEEK_END);
+	uint8_t ch;
+	uint8_t string_len_in_chars = 0;
+	uint8_t char_len;
+	while (1){
+		if ((ch = getch()) != 0x0A) break;
+		else if (ch == 0x7F || ch == 0x08) {  // Backspace && Delete
+			if (string_len_in_chars > 0) {
+				string_len_in_chars--; // len contains the lenght in the screen, so multibytes count as one.
+				do { // but in file we have to take care of each
+					fseek(file, -1, SEEK_CUR);
+					ch = fgetc(file);
+					fseek(file, -1, SEEK_CUR);
+					if (is_utf8_continuation(ch) != 0) break;
+				} while (1);
+				printf("\033[1D \033[1D");
 				fflush(stdout);
 			}
-		}
-		else if (ch == '\n' || ch == '\r') {
-			break;
-		}
-		else {
-			int char_len = utf8_char_length(ch);
-			if (len + char_len >= MAX_INPUT) continue;
-			name[len++] = ch;
+		} else {
+			char_len = utf8_char_length(ch);
+			if (string_len_in_chars + 1 >= max_characters_length) continue;
+			//name[string_len_in_chars++] = ch;
 			putchar(ch);
 			// Read remaining bytes if multibyte
-			for (int i = 1; i < char_len; ++i) {
+			for (uint8_t i = 1; i < char_len; ++i) {
 				if (read(STDIN_FILENO, &ch, 1) != 1) break;
-				name[len++] = ch;
+				//name[string_len_in_chars++] = ch;
 				putchar(ch);
 			}
 			fflush(stdout);
 		}
 	}
-
-	disable_raw_mode(&orig_termios);
 	putchar('\n');
+	fputc(0x0A, file);
+	fseek(file, 3, SEEK_SET);
+	end_file(file);
+	fclose(file);
+	return 0;
+}
 
-	// Append directly to file
-	FILE* fp = fopen(FILE_PATH, "r+");
-	if (!fp) {
-		perror("Error opening file");
-		return;
+void end_file(FILE* file_to_end);{
+	uint32_t original_pos = ftell(file_to_end);
+	fseek(file_to_end, 0, SEEK_END);
+	off_t file_length = ftell(file_to_end);
+	fseek(file_to_end, original_pos, SEEK_SET);
+	if (file_length > cutting) {
+		ftruncate(fileno(file_to_end), cutting);
 	}
-	fseek(fp, 0, SEEK_END);  // Move to end
-	fwrite(name, 1, len, fp);
-	fputc('\n', fp);         // Optional newline
-	// fputc(0x1A, fp);      // Optional EOF marker for legacy compatibility
-	fclose(fp);
+	return;
+}
+
+int32_t main(){
+	uint8_t returned;
+	returned = read_name_and_append_to_file(FILE_PATH, MAX_INPUT);
+	printf("\n\nReturned %u\n", returned);
+	return 0;
 }
