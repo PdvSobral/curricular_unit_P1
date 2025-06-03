@@ -41,6 +41,7 @@ For now, it's just an adaptation in progress of another program.
 #define MAX_TITLE_LENGTH 100
 
 const char* USER_DATABASE = "./assets/sys_shadow.csv";
+const char* BOOK_ARCHIVE_DIR = "./assets/books";
 static ACCOUNT CURRENT_LOGIN = {0, 999999999, 2, ""};
 
 // Defenition of the menu arrays
@@ -371,6 +372,28 @@ uint8_t  add_book(){
     printf("Account registered successfully.\n");
     pause_();
 
+}
+
+void check_book_info(){
+	char id_book_str[15];
+	printf("Insert ISBN Book: ");
+	read_n_chars(14, id_book_str);
+	if(strlen2(id_book_str)!=13){
+		printf("ISBN is not valid!\n");
+		pause_();
+		return 2;
+	}
+	// TODO: IMPLEMENTAR ESTA FUNÇÃO
+	BOOK* book = get_book_by_id(BOOK_ARCHIVE_DIR, id_book_str);
+	if (book==NULL){
+		printf("Book not found!\n");
+		pause_();
+		return 2;
+	}
+	// TODO: IMPLEMENTAR ESTA FUNÇÃO
+	print_book_data(BOOK_ARCHIVE_DIR, id_book_str);
+	pause_();
+	return 0;
 }
 
 // MENUS
