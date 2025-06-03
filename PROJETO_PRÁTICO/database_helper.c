@@ -105,6 +105,14 @@ ACCOUNT* get_user_by_id(const char* database_name, const char* id){
 BOOK* get_book_by_id(const char* archive_folder, const char* id);
 // Return NULL if no book, else book info in struct
 
+//TODO: Define this prototype
+LinkedList* get_book_ids(const char* archive_folder);
+// Return LinkedList with apontador to null
+
+//TODO: Define this prototype
+void print_book_name(const char* archive_folder, uint32_t uid);
+// Prints a not newline terminated name for the uid provided
+
 void print_name(const char* database_name, uint32_t name_offset){
 	FILE* file;
 	uint8_t buffer[31];

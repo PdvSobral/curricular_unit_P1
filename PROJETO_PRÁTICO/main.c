@@ -396,6 +396,32 @@ void check_book_info(){
 	return 0;
 }
 
+void print_isbn_name(void* a){
+	BOOK* book = (BOOK*)a;
+	printf("%d -> ", book->uid);
+	printf("%s\n", book->name);
+	//TODO: Although for now is a string, later maybe make it read directly from file
+	// print_book_name(book->name);
+}
+int32_t compare_ISBN(void* a, void* b){
+	BOOK* a2 = (BOOK*) a;
+	BOOK* b2 = (BOOK*) b;
+	// TODO: to test if really works
+	return a2->uid - b2->uid;
+}
+void list_book_by_ISBN(){
+	LinkedList* books; 
+	books = get_book_ids(BOOK_ARCHIVE_DIR);
+	if (books->size == 0)
+	{
+		printf("Error or no books found!\n");
+		return 0;
+	}
+	three_way_quick_sort(books, compare_ISBN);
+	traverse_list(books, print_isbn_name);
+	
+}
+
 // MENUS
 void mng_student_account(){
 	/*
