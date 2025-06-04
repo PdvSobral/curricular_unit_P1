@@ -512,17 +512,27 @@ uint8_t confirmation(char* main_msg, uint8_t len_cabecalho, uint8_t print_line){
 }
 
 void print_between(char* str, uint8_t len_cabecalho, uint8_t newline){
+	if (len_cabecalho - 4 - (uint8_t) strlen2(str) < 0){
+		printf("String to print_between must be at least 4 characters shorter than len_cabecalho.");
+		printf("\nPlease increase len_cabecalho.\n");
+		exit(5);
+	}
 	printf("│ %s", str);
-	for(uint8_t i=0; i < len_cabecalho-3-strlen2(str); i++) printf(" ");
-	printf("│");
+	for(uint8_t i=0; i < len_cabecalho-4-strlen2(str); i++) printf(" ");
+	printf(" │");
 	if (newline == 1) printf("\n");
 	return;
 }
 
 void print_between_format(char* str, char* format, uint8_t len_cabecalho, uint8_t newline){
+	if (len_cabecalho - 4 - (uint8_t) strlen2(str) < 0){
+		printf("String to print_between must be at least 4 characters shorter than len_cabecalho.");
+		printf("\nPlease increase len_cabecalho.\n");
+		exit(5);
+	}
 	printf("│ %s%s\033[0m", format, str);
-	for(uint8_t i=0; i < len_cabecalho-3-strlen2(str); i++) printf(" ");
-	printf("│");
+	for(uint8_t i=0; i < len_cabecalho-4-strlen2(str); i++) printf(" ");
+	printf(" │");
 	if (newline == 1) printf("\n");
 	return;
 }

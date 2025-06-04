@@ -24,9 +24,9 @@ typedef struct _account{
 
 typedef struct _book{
 	uint64_t uid;      					// Unique ID, ISBN-13
-	char* name[100];         			// Name
+	char name[100];         			// Name
 	uint8_t quantity;					// How many books are there in the bibl system
-	char* description;  				// Very long string :)
+	char description[100]; 				// Very long string :), probably end up using offsets like name in account
 	LinkedList* requested_by;  			// Contains a list of users that currently have the book
 	LinkedList* queue_for_students;	    // Maybe later a file??
 } BOOK;
