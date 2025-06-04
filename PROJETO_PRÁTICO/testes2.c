@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include "functions.c"
+#include "database_helper.c"
 
 #define MAX_INPUT 255
 #define FILE_PATH "./none.txt"
@@ -26,9 +27,21 @@ uint8_t is_utf8_continuation(uint8_t ch) {
 	return (ch & 0xC0) == 0x80;
 }
 
-uint8_t read_name_and_append_to_file(const char* file_name, uint8_t max_characters_length) {
+void end_file(FILE* file_to_end){
+	uint32_t original_pos = ftell(file_to_end);
+	fseek(file_to_end, 0, SEEK_END);
+	uint32_t file_length = ftell(file_to_end);
+	fseek(file_to_end, original_pos, SEEK_SET);
+	if (file_length > original_pos) {
+		ftruncate(fileno(file_to_end), original_pos);
+	}
+	return;
+}
+
+uint8_t read_name_and_append_to_file(const char* file_name, uint8_t max_characters_length){
 	printf("Enter name: ");
 	fflush(stdout);
+	touch(file_name);
 	FILE* file = fopen(file_name, "rb+");
 	if (file == NULL) return 1;
 	fseek(file, 0, SEEK_END);
@@ -37,7 +50,7 @@ uint8_t read_name_and_append_to_file(const char* file_name, uint8_t max_characte
 	uint8_t char_len;
 	while (1){
 		if ((ch = getch()) != 0x0A) break;
-		else if (ch == 0x7F || ch == 0x08) {  // Backspace && Delete
+		else if (ch == 0x7F || ch == 0x08){  // Backspace && Delete
 			if (string_len_in_chars > 0) {
 				string_len_in_chars--; // len contains the lenght in the screen, so multibytes count as one.
 				do { // but in file we have to take care of each
@@ -49,14 +62,15 @@ uint8_t read_name_and_append_to_file(const char* file_name, uint8_t max_characte
 				printf("\033[1D \033[1D");
 				fflush(stdout);
 			}
-		} else {
+		}
+		else {
 			char_len = utf8_char_length(ch);
 			if (string_len_in_chars + 1 >= max_characters_length) continue;
 			//name[string_len_in_chars++] = ch;
 			putchar(ch);
 			// Read remaining bytes if multibyte
 			for (uint8_t i = 1; i < char_len; ++i) {
-				if (read(STDIN_FILENO, &ch, 1) != 1) break;
+				ch = getch();
 				//name[string_len_in_chars++] = ch;
 				putchar(ch);
 			}
@@ -69,17 +83,6 @@ uint8_t read_name_and_append_to_file(const char* file_name, uint8_t max_characte
 	end_file(file);
 	fclose(file);
 	return 0;
-}
-
-void end_file(FILE* file_to_end);{
-	uint32_t original_pos = ftell(file_to_end);
-	fseek(file_to_end, 0, SEEK_END);
-	off_t file_length = ftell(file_to_end);
-	fseek(file_to_end, original_pos, SEEK_SET);
-	if (file_length > cutting) {
-		ftruncate(fileno(file_to_end), cutting);
-	}
-	return;
 }
 
 int32_t main(){

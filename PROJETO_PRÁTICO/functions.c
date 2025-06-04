@@ -89,7 +89,7 @@ uint32_t strlen2(const char *str) {
 #endif
 
 struct termios original_tio;
-void disable_ctrl_d() {
+void disable_ctrl_d(){
     struct termios new_tio;
     tcgetattr(STDIN_FILENO, &original_tio);
     new_tio = original_tio;
@@ -97,16 +97,16 @@ void disable_ctrl_d() {
     tcsetattr(STDIN_FILENO, TCSANOW, &new_tio);
     return;
 }
-void enable_ctrl_d() {
+void enable_ctrl_d(){
     tcsetattr(STDIN_FILENO, TCSANOW, &original_tio);
     return;
 }
-void handle_sigint(int32_t sig) {
+void handle_sigint(int32_t sig){
     printf("\n\n\nCaught signal %d. Restoring terminal settings and exiting...\n", sig);
     enable_ctrl_d();
     exit(1);
 }
-char getch() {
+char getch(){
     char ch;
     struct termios oldt, newt;
     tcgetattr(STDIN_FILENO, &oldt); 			// Get the current terminal settings

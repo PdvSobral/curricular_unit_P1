@@ -137,6 +137,14 @@ void overwrite_password(const char* database_name, uint32_t name_offset){
 	return;
 }
 
+void touch(const char* database_name){
+	if (access(database_name, F_OK) == -1) {
+		FILE* file = fopen(database_name, "wb");
+		fclose(file);
+	}
+	return;
+}
+
 #ifdef __database_helper__
 	void print_account_data(ACCOUNT* data){
 		printf("uID: %d\n", data->uid);
