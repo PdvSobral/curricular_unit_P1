@@ -488,7 +488,7 @@ uint8_t  add_book(){
 
 }
 
-void check_book_info(){
+/*void check_book_info(){
 	char id_book_str[15];
 	printf("Insert ISBN Book: ");
 	read_n_chars(14, id_book_str);
@@ -505,14 +505,14 @@ void check_book_info(){
 		return 2;
 	}
 	// TODO: IMPLEMENTAR ESTA FUNÇÃO
-	print_book_data(BOOK_ARCHIVE_DIR, id_book_str);
+	//print_book_data(BOOK_ARCHIVE_DIR, id_book_str);
 	pause_();
 	return 0;
 }
 
 void print_isbn_name(void* a){
 	BOOK* book = (BOOK*)a;
-	printf("%d -> ", book->uid);
+	//printf("%d -> ", book->uid);
 	printf("%s\n", book->name);
 	//TODO: Although for now is a string, later maybe make it read directly from file
 	// print_book_name(book->name);
@@ -535,7 +535,25 @@ void list_book_by_ISBN(){
 	traverse_list(books, print_isbn_name);
 	
 }
+*/
+void print_isbn_name(void* a){
+    BOOK* book = (BOOK*)a;
+    printf("ISBN: %013d | Título: %s\n", book->uid, book->name);
+}
 
+void list_available_books(){ 
+    LinkedList* books;
+	//TODO: Implementar a função de listar livros disponíveis
+    books = get_book_ids(BOOK_ARCHIVE_DIR);
+    if (books == NULL || books->size == 0) {
+        printf("Nenhum livro disponível encontrado!\n");
+        pause_();
+        return;
+    }
+    printf("Livros disponíveis:\n");
+    traverse_list(books, print_isbn_name);
+    pause_();
+}
 // MENUS
 void mng_student_account(){
 	/*
