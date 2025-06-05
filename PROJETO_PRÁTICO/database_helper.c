@@ -106,7 +106,7 @@ ACCOUNT* get_user_by_id(const char* database_name, const char* id){
 BOOK* get_book_by_id(const char* archive_folder, const char* id);
 // Return NULL if no book, else book info in struct
 
-//TODO: Define this prototype
+//TODO: Verificar o prototipo, por favor
 LinkedList* get_book_ids(const char* archive_folder) {
     DIR* dir;
     struct dirent* entry;
