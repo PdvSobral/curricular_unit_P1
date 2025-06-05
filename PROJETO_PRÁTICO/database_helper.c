@@ -103,7 +103,21 @@ ACCOUNT* get_user_by_id(const char* database_name, const char* id){
 }
 
 //TODO: Define this prototype
-BOOK* get_book_by_id(const char* archive_folder, const char* id);
+BOOK* get_book_by_id(const char* archive_folder, const char* id){
+	DIR* dir;
+	struct dirent* entry;
+
+	dir= opendir(archive_folder);
+	if (!dir) return NULL;
+	// Percorre os ficheiros do diretório
+	while(entry = readdir(dir)!=NULL){
+		if(entry==id){
+			return 0;
+			break;
+		}
+		
+	}
+}
 // Return NULL if no book, else book info in struct
 
 //TODO: Verificar o prototipo, por favor
