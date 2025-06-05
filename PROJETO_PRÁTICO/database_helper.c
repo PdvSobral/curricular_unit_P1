@@ -22,6 +22,7 @@ This file contains the functions developed to abstract the main program to how t
 #include "linked_lists.c"
 #include "typedefs.c"
 #include "functions.c"
+#include <dirent.h>
 
 LinkedList* get_users_ids(const char* database_name){
 	FILE* file;
@@ -106,7 +107,32 @@ BOOK* get_book_by_id(const char* archive_folder, const char* id);
 // Return NULL if no book, else book info in struct
 
 //TODO: Define this prototype
-LinkedList* get_book_ids(const char* archive_folder);
+LinkedList* get_book_ids(const char* archive_folder) {
+    DIR* dir;
+    struct dirent* entry;
+    LinkedList* list = create_linked_list();
+	// Abrir o diretório
+    dir = opendir(archive_folder);
+    if (!dir) return list;
+	// Percorre os ficheiros do diretório
+    while ((entry = readdir(dir)) != NULL) {
+        size_t len = strlen(entry->d_name);
+        // Verifica se é ficheiro .csv com 13 dígitos no nome
+        if (len == 17 && strcmp(entry->d_name + len - 4, ".csv") == 0) {
+            char isbn_str[14] = {0};
+			// Copia os 13 caracteres do ISBN para uma string e converte para uint64_t
+            strncpy(isbn_str, entry->d_name, 13);
+            uint64_t isbn = strtoull(isbn_str, NULL, 10);
+			//Adição do livro à lista
+            BOOK* book = (BOOK*)malloc(sizeof(BOOK));
+            book->uid = isbn;
+            book->name[0] = '\0'; // Para preencher o nome do livro
+            append_data_to_list(list, book);
+        }
+    }
+    closedir(dir);
+    return list;
+}
 // Return LinkedList with apontador to null
 
 //TODO: Define this prototype
