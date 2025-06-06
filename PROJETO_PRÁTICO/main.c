@@ -380,13 +380,8 @@ uint8_t regist(){
 									printf("\033[4A\033[3C");
 								} else {
 									ACCOUNT* my_user = get_user_by_id(USER_DATABASE, account_id);
-									if (my_user == NULL){
-										printf("\n\n");
-										reset_line(CABECALHO_LEN);
-										print_between_format("User available and passwords match!", "\033[32m", CABECALHO_LEN, 1);
-										print_between_format("Please enter your name now:", "\033[32m", CABECALHO_LEN, 1);
-										break;
-									} else {
+									if (my_user == NULL) break;
+									else {
 										printf("\n\n");
 										reset_line(CABECALHO_LEN);
 										print_between_format("User already exists!", "\033[31m", CABECALHO_LEN, 1);
@@ -410,6 +405,10 @@ uint8_t regist(){
 		fflush(stdout);
 	}
 	// TODO: Add a check for account type, for now always student
+	printf("\n\n");
+	reset_line(CABECALHO_LEN);
+	print_between_format("User available and passwords match!", "\033[32m", CABECALHO_LEN, 1);
+	print_between_format("Please enter your name now:", "\033[32m", CABECALHO_LEN, 1);
 	FILE* file = fopen(USER_DATABASE, "a");
     if (file == NULL) return 1;
 	char md5_hash[33];
