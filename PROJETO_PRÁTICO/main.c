@@ -564,7 +564,27 @@ void list_book_by_ISBN(){
 */
 void print_isbn_name(void* a){
     BOOK* book = (BOOK*)a;
-    printf("ISBN: %013ld | Título: %s\n", book->uid, book->name);
+    printf("ISBN: %013lu | Título: ", book->uid);
+    char file_path[sizeof(BOOK_ARCHIVE_DIR)+18];
+    snprintf(file_path, sizeof(file_path), "%s%13lu.csv", BOOK_ARCHIVE_DIR, book->uid);
+    FILE* file = fopen(file_path, "rb");
+	fseek(file, 6, SEEK_SET);
+	int8_t bytesRead;
+	char buffer[7];
+	buffer[6] = 0x00;
+	while(1){
+		bytesRead = fread(buffer, 1, 6, file);
+		if (bytesRead == 0) break;
+		for (bytesRead--; bytesRead >= 0; bytesRead--) {
+			if (buffer[bytesRead] == 0x0A) {
+				buffer[bytesRead] = 0x00;
+				printf("%s\n", buffer);
+				fclose(file);
+				return;
+			}
+		}
+		printf("%s", buffer);
+	}
 }
 
 void list_available_books(){ 
