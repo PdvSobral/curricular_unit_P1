@@ -408,19 +408,18 @@ uint8_t regist(){
 		}
 		fflush(stdout);
 	}
-	// TODO: Ask for name and write it directly to the file, for know static
 	// TODO: Add a check for account type, for now always student
-	char name[LEN_NAME+1];
-	print_between_format("->", "\033[32m", CABECALHO_LEN, 1);
-	print_bottom(CABECALHO_LEN, 1);
-	printf("\033[2A\033[5C");
-	read_n_chars(LEN_NAME, name);
-	FILE* file = fopen("assets/sys_shadow.csv", "a");
+	FILE* file = fopen(USER_DATABASE, "a");
     if (file == NULL) return 1;
 	char md5_hash[33];
     hash_md5(password, md5_hash);
-    fprintf(file, "%s:%s:%1u:%s\n", account_id, md5_hash, 0, name);  // 0 should be 'account_type'
+    fprintf(file, "%s:%s:%1u:", account_id, md5_hash, 0);  // 0 should be 'account_type'
     fclose(file);
+	print_between_format("->", "\033[32m", CABECALHO_LEN, 1);
+	print_bottom(CABECALHO_LEN, 1);
+	printf("\033[2A\033[5C");
+	fflush(stdout);
+	read_text_and_append_to_file(USER_DATABASE, LEN_NAME, 1);
     printf("\nAccount registered successfully.\n");
 	pause_();
 	return 0;
