@@ -36,7 +36,12 @@ For now, it's just an adaptation in progress of another program.
 
 #define AGGRESSIVE
 #define MAX_PASSWORD_LENGTH 30
+// TODO: Ou a defenir um limite fixo ou a transformar em escrita não limitada diretamente em ficheiro,
+// TODO: Ou ainda escrever diretamente mas ter limitado na mesma
+#define MAX_TITLE_LENGTH 100
+
 const char* USER_DATABASE = "./assets/sys_shadow.csv";
+const char* BOOK_ARCHIVE_DIR = "./assets/books";
 static ACCOUNT CURRENT_LOGIN = {0, 999999999, 2, ""};
 
 // Defenition of the menu arrays
@@ -484,6 +489,97 @@ uint8_t change_password(){
 	return 0;
 }
 
+uint8_t  add_book(){
+	char title[MAX_TITLE_LENGTH], caminho[31]="assets/books/1111111111111.csv", description[MAX_TITLE_LENGTH];
+	char id_book_str[15];
+	
+	printf("Insert ID Book: ");
+	read_n_chars(14, id_book_str);
+	
+	if(strlen2(id_book_str)!=13) return 2;
+	strcpy(caminho+7, id_book_str);
+	strcpy(caminho+20, ".csv");
+
+	printf("Insert Title: ");
+	read_n_chars(MAX_TITLE_LENGTH, title);
+	printf("Insert Description: ");
+	read_n_chars(MAX_TITLE_LENGTH, description);
+	
+	FILE* file = fopen(caminho, "a");
+    if (file == NULL) return 1;
+    fprintf(file, "%05d:%s\n%s\n%05d\n", 0, title, description, 0);
+    fclose(file);
+    printf("Account registered successfully.\n");
+    pause_();
+
+}
+
+/*void check_book_info(){
+	char id_book_str[15];
+	printf("Insert ISBN Book: ");
+	read_n_chars(14, id_book_str);
+	if(strlen2(id_book_str)!=13){
+		printf("ISBN is not valid!\n");
+		pause_();
+		return 2;
+	}
+	// TODO: IMPLEMENTAR ESTA FUNÇÃO
+	BOOK* book = get_book_by_id(BOOK_ARCHIVE_DIR, id_book_str);
+	if (book==NULL){
+		printf("Book not found!\n");
+		pause_();
+		return 2;
+	}
+	// TODO: IMPLEMENTAR ESTA FUNÇÃO
+	//print_book_data(BOOK_ARCHIVE_DIR, id_book_str);
+	pause_();
+	return 0;
+}
+
+void print_isbn_name(void* a){
+	BOOK* book = (BOOK*)a;
+	//printf("%d -> ", book->uid);
+	printf("%s\n", book->name);
+	//TODO: Although for now is a string, later maybe make it read directly from file
+	// print_book_name(book->name);
+}
+int32_t compare_ISBN(void* a, void* b){
+	BOOK* a2 = (BOOK*) a;
+	BOOK* b2 = (BOOK*) b;
+	// TODO: to test if really works
+	return a2->uid - b2->uid;
+}
+void list_book_by_ISBN(){
+	LinkedList* books; 
+	books = get_book_ids(BOOK_ARCHIVE_DIR);
+	if (books->size == 0)
+	{
+		printf("Error or no books found!\n");
+		return 0;
+	}
+	three_way_quick_sort(books, compare_ISBN);
+	traverse_list(books, print_isbn_name);
+	
+}
+*/
+void print_isbn_name(void* a){
+    BOOK* book = (BOOK*)a;
+    printf("ISBN: %013d | Título: %s\n", book->uid, book->name);
+}
+
+void list_available_books(){ 
+    LinkedList* books;
+	//TODO: Implementar a função de listar livros disponíveis
+    books = get_book_ids(BOOK_ARCHIVE_DIR);
+    if (books == NULL || books->size == 0) {
+        printf("Nenhum livro disponível encontrado!\n");
+        pause_();
+        return;
+    }
+    printf("Livros disponíveis:\n");
+    traverse_list(books, print_isbn_name);
+    pause_();
+}
 // MENUS
 void mng_student_account(){
 	/*
@@ -548,8 +644,10 @@ void mng_biblman_account(){
 		_escolha_menu = menu("MANAGE SYSTEM ", CABECALHO_LEN, mng_biblman_account_menu, len_mng_biblman_account_menu, 1);
 		if(_escolha_menu==0) break;
 		switch(_escolha_menu){
+			case 1: add_book(); break;
 			case 5: regist(); break;
 			case 6: reset_password(); break;
+			case 7: change_password(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
 	}
