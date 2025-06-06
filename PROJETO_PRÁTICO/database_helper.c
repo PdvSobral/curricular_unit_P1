@@ -145,6 +145,26 @@ void touch(const char* database_name){
 	return;
 }
 
+uint8_t utf8_char_length(uint8_t ch) {
+	if (ch < 0x80) return 1;
+	else if ((ch >> 5) == 0x6) return 2;
+	else if ((ch >> 4) == 0xE) return 3;
+	else if ((ch >> 3) == 0x1E) return 4;
+	return 1;
+}
+uint8_t is_utf8_continuation(uint8_t ch) {
+	return ch >= 0x80 && ch < 0xC0;
+}
+void end_file(FILE* file_to_end){
+	uint32_t original_pos = ftell(file_to_end);
+	fseek(file_to_end, 0, SEEK_END);
+	uint32_t file_length = ftell(file_to_end);
+	fseek(file_to_end, original_pos, SEEK_SET);
+	if (file_length > original_pos) {
+		ftruncate(fileno(file_to_end), original_pos);
+	}
+	return;
+}
 uint8_t read_text_and_append_to_file(const char* file_name, uint8_t max_characters_length, uint8_t new_line){
     touch(file_name);
     FILE* file = fopen(file_name, "rb+");  // for testing
