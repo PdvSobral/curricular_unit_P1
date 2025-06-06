@@ -119,26 +119,24 @@ uint8_t login(uint8_t account_flag_type){
 	char md5_hash[33];
 	while (1){
 		// chars especiais tipo setas
-		if ((ch = getch()) == 27) {
-			if ((ch = getch()) == 91) {
-				if ((ch = getch()) == 65 && state != 0){  // up arrow pressed
-					// printf("↑");
-					switch(state){
-						case 1: printf("\033[999D\033[3C \033[1A\033[5D\033[3C*\033[%dC", 14 + strlen2(account_id)); break;
-						case 2: printf(" \033[1D\033[2A*\033[%dC", 12 + strlen2(password)); break;
-						case 3: printf(" \033[13D*\033[1D"); break;
-					}
-					state--;
+		if ((ch = getch()) == 27 && (ch = getch()) == 91) {
+			if (((ch = getch()) == 65 || ch == 68) && state != 0){  // up arrow pressed
+				// printf("↑");
+				switch(state){
+					case 1: printf("\033[999D\033[3C \033[1A\033[5D\033[3C*\033[%dC", 14 + strlen2(account_id)); break;
+					case 2: printf(" \033[1D\033[2A*\033[%dC", 12 + strlen2(password)); break;
+					case 3: printf(" \033[13D*\033[1D"); break;
 				}
-				else if (ch == 66 && state != 3){		 // down arrow pressed
-					// printf("↓");
-					switch(state){
-						case 0: printf("\033[999D\033[3C \033[1B\033[5D\033[3C*\033[%dC", 12 + strlen2(password)); break;
-						case 1: printf("\033[999D\033[3C \033[2B\033[5D\033[3C*\033[1D"); break;
-						case 2: printf(" \033[11C*\033[1D"); break;
-					}
-					state++;
+				state--;
+			}
+			else if ((ch == 66 || ch == 67) && state != 3){		 // down arrow pressed
+				// printf("↓");
+				switch(state){
+					case 0: printf("\033[999D\033[3C \033[1B\033[5D\033[3C*\033[%dC", 12 + strlen2(password)); break;
+					case 1: printf("\033[999D\033[3C \033[2B\033[5D\033[3C*\033[1D"); break;
+					case 2: printf(" \033[11C*\033[1D"); break;
 				}
+				state++;
 			}
 		}
 		else {
@@ -403,16 +401,46 @@ uint8_t regist(){
 		}
 		fflush(stdout);
 	}
-	// TODO: Add a check for account type, for now always student
 	printf("\n\n");
 	reset_line(CABECALHO_LEN);
 	print_between_format("User available and passwords match!", "\033[32m", CABECALHO_LEN, 1);
+	cabecalho("CHOOSE ACCOUNT TYPE ", CABECALHO_LEN);
+	printf("\033[2A");
+	reset_line(CABECALHO_LEN);
+	printf("\033[2B");
+	reset_line(CABECALHO_LEN);
+	printf("│ [*] Student [ ] Librarian");
+	printf("\033[%uC│\n", CABECALHO_LEN - 28);
+	printf("└");
+	for(uint8_t _index = 0; _index<CABECALHO_LEN-2; _index++){
+		printf("─");
+	} printf("┘");
+	printf("\033[1A\033[999D\033[3C");
+	fflush(stdout);
+	state=0; //0 - Student 1 - Librarian
+	while (1){
+		// chars especiais tipo setas
+		if (((ch = getch()) == 27) && ((ch = getch()) == 91)) {
+			if (((ch = getch()) == 65 || ch == 68) && state != 0){  // up arrow and left arrow pressed
+				printf(" \033[13D*\033[1D");
+				state--;
+			}
+			else if ((ch == 66 || ch == 67) && state != 1){ // down arrow and right arrow pressed
+				printf(" \033[11C*\033[1D");
+				state++;
+			}
+		}
+		else if (ch == 0x0A) break;
+		fflush(stdout);
+	}
+	printf("\n\n");
+	reset_line(CABECALHO_LEN);
 	print_between_format("Please enter your name now:", "\033[32m", CABECALHO_LEN, 1);
 	FILE* file = fopen(USER_DATABASE, "a");
     if (file == NULL) return 1;
 	char md5_hash[33];
     hash_md5(password, md5_hash);
-    fprintf(file, "%s:%s:%1u:", account_id, md5_hash, 0);  // 0 should be 'account_type'
+    fprintf(file, "%s:%s:%1u:", account_id, md5_hash, state);  // 0 should be 'account_type'
     fclose(file);
 	print_between_format("->", "\033[32m", CABECALHO_LEN, 1);
 	print_bottom(CABECALHO_LEN, 1);

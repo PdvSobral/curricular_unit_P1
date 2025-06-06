@@ -58,6 +58,7 @@ LinkedList* get_users_ids(const char* database_name){
 	return to_return;
 }
 
+// TODO: Check what would happen if the name was left empty due to crash in account registry
 ACCOUNT* get_user_by_id(const char* database_name, const char* id){
 	FILE* file;
 	uint8_t buffer[34];
