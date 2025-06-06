@@ -12,7 +12,7 @@ Although the author said no shoutout or credits needed, I think he/she (I do not
 
 Adapted by Pedro Sobral (33541) in 2025-05-28.
 */
-// TODO: MD5 for strings with accents does not work well, but it is relyable, I think...
+// FIXME: MD5 for strings with accents does not work well, but it is relyable, I think...
 // Makes so that if "#define __main__" is not somewhere before this program is compiled an error ocurs, stopping compilation
 // para compilar diretamente, tenho de colocar "-z noexecstack" no gcc
 #ifndef __main__

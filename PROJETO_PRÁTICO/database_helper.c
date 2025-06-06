@@ -58,7 +58,7 @@ LinkedList* get_users_ids(const char* database_name){
 	return to_return;
 }
 
-// TODO: Check what would happen if the name was left empty due to crash in account registry
+// FIXME: Check what would happen if the name was left empty due to crash in account registry
 ACCOUNT* get_user_by_id(const char* database_name, const char* id){
 	FILE* file;
 	uint8_t buffer[34];
@@ -104,18 +104,29 @@ ACCOUNT* get_user_by_id(const char* database_name, const char* id){
 }
 
 //TODO: Define this prototype
-BOOK* get_book_by_id(const char* archive_folder, const char* id){
-	DIR* dir;
-	struct dirent* entry;
-	dir= opendir(archive_folder);
-	if (!dir) return NULL;
-	// Percorre os ficheiros do diretório
-	while((entry = readdir(dir))!=NULL){
-		if((char*) entry == (char*) id) return 0;
-	}
-	return NULL;
+BOOK* get_book_by_id(const char* archive_folder, const char id[14]){
+	/*
+	Return NULL if no book, else book info in struct
+	Arguments:
+		const char* archive_folder: Name of the folder containing the book files. Must exist
+		const char id[14]:			String with 13 numbers (ISBN-13) + 0x00
+	Return:
+		BOOK* | NULL : Returns a pointer to a book object corresponding to the id. Null if an error ocurred or it was not found.
+	*/
+    char file_path[sizeof(archive_folder)+14];
+    sprintf(file_path, "%s/%s.txt", archive_folder, id);
+
+	BOOK* book = (BOOK*) malloc(sizeof(BOOK));
+	if (book == NULL) return NULL;
+    FILE* file = fopen(file_path, "rb");
+    if (file == NULL) return NULL;
+
+    // Read the book's information from the file
+    // ...
+
+    fclose(file);
+    return book;
 }
-// Return NULL if no book, else book info in struct
 
 //TODO: Verificar o prototipo, por favor
 LinkedList* get_book_ids(const char* archive_folder) {
@@ -127,7 +138,8 @@ LinkedList* get_book_ids(const char* archive_folder) {
     if (dir == NULL) return list;
 	// Percorre os ficheiros do diretório
     while ((entry = readdir(dir)) != NULL) {
-        uint32_t len = strlen2(entry->d_name); // FIXME: Probably later make it 16
+    	// FIXME: Probably later make it 16
+        uint32_t len = strlen2(entry->d_name);
         // Verifica se é ficheiro .csv com 13 dígitos no nome
         if (len == 17 && strcmp(entry->d_name + len - 4, ".csv") == 0) {
             char isbn_str[14] = {0};

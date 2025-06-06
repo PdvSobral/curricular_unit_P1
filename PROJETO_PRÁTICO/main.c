@@ -37,9 +37,8 @@ For now, it's just an adaptation in progress of another program.
 
 #define AGGRESSIVE
 #define MAX_PASSWORD_LENGTH 30
-// TODO: Ou a defenir um limite fixo ou a transformar em escrita não limitada diretamente em ficheiro,
-// TODO: Ou ainda escrever diretamente mas ter limitado na mesma
-#define MAX_TITLE_LENGTH 100
+#define MAX_TITLE_LENGTH 	100
+#define MAX_NAME_LENGHT 	70
 
 const char* USER_DATABASE = "./assets/sys_shadow.csv";
 const char* BOOK_ARCHIVE_DIR = "./assets/books";
@@ -447,7 +446,7 @@ uint8_t regist(){
 	print_bottom(CABECALHO_LEN, 1);
 	printf("\033[2A\033[5C");
 	fflush(stdout);
-	read_text_and_append_to_file(USER_DATABASE, LEN_NAME, 1);
+	read_text_and_append_to_file(USER_DATABASE, MAX_NAME_LENGHT, 1);
     printf("\nAccount registered successfully.\n");
 	pause_();
 	return 0;
