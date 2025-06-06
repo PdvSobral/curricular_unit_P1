@@ -41,7 +41,7 @@ For now, it's just an adaptation in progress of another program.
 #define MAX_NAME_LENGHT 	70
 
 const char* USER_DATABASE = "./assets/sys_shadow.csv";
-const char* BOOK_ARCHIVE_DIR = "./assets/books";
+const char* BOOK_ARCHIVE_DIR = "./assets/books/"; // MUST INCLUDE THE SLASH (/), parts of the code and buffers depend on that
 static ACCOUNT CURRENT_LOGIN = {0, 999999999, 2, ""};
 
 // Defenition of the menu arrays
