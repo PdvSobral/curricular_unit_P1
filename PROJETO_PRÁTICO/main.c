@@ -712,4 +712,4 @@ int32_t main(void){
 		enable_ctrl_d();
 	#endif
 	return 0;
-};
+}
