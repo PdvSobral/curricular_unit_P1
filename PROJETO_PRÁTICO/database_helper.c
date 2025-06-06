@@ -343,15 +343,19 @@ void print_book_data(BOOK* data){
 
 	void print_isbn_name(void* a){
 		BOOK* book = (BOOK*)a;
+		char buffer[7];
+		buffer[6] = 0x00;
+		buffer[0] = 0x00;
+		while(BOOK_ARCHIVE_DIR[(uint8_t) buffer[0]]!=0x0A) buffer[0]++;
 		printf("ISBN: %013lu | Título: ", book->uid);
-		char file_path[sizeof(BOOK_ARCHIVE_DIR)+18];
+		char file_path[buffer[0]+18];
 		snprintf(file_path, sizeof(file_path), "%s%13lu.csv", BOOK_ARCHIVE_DIR, book->uid);
 		fflush(stdout);
 		FILE* file = fopen(file_path, "rb");
+		if(file==NULL){printf("ERROR!\n"); return;}
+		fflush(stdout);
 		fseek(file, 6, SEEK_SET);
 		int8_t bytesRead;
-		char buffer[7];
-		buffer[6] = 0x00;
 		while(1){
 			bytesRead = fread(buffer, 1, 6, file);
 			if (bytesRead == 0) break;
@@ -393,6 +397,7 @@ void print_book_data(BOOK* data){
 			book = get_book_by_id("./assets/books/", "9789727221561");
 			if(book==NULL){printf("Book file not found."); return 1;}
 			print_book_data(book);
+			print_isbn_name(book);
 			delete_linked_list(book->queue_for_students, free);
 			free(book);
 		}
