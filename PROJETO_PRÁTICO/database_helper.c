@@ -165,38 +165,52 @@ BOOK* get_book_by_id(const char* archive_folder, char id[14]){
     return book;
 }
 
-//TODO: Verificar o prototipo, por favor
 LinkedList* get_book_ids(const char* archive_folder) {
-    DIR* dir;
-    struct dirent* entry;
-    LinkedList* list = create_linked_list();
-	// Abrir o diretório
-    dir = opendir(archive_folder);
-    if (dir == NULL) return list;
-	// Percorre os ficheiros do diretório
-    while ((entry = readdir(dir)) != NULL) {
-    	// FIXME: Probably later make it 16
-        uint32_t len = strlen2(entry->d_name);
-        // Verifica se é ficheiro .csv com 13 dígitos no nome
-        if (len == 17 && strcmp(entry->d_name + len - 4, ".csv") == 0) {
-            char isbn_str[14] = {0};
-			// Copia os 13 caracteres do ISBN para uma string e converte para uint64_t
-            strncpy(isbn_str, entry->d_name, 13);
-            uint64_t isbn = strtoull(isbn_str, NULL, 10);
-			//Adição do livro à lista
-            BOOK* book = (BOOK*)malloc(sizeof(BOOK));
-            book->uid = isbn;
-            append_data_to_list(list, book);
-        }
-    }
-    closedir(dir);
-    return list;
+	/*LinkedList of uint32_t*/
+	DIR* directory;
+    struct dirent* file_entity;
+	LinkedList* to_return = create_linked_list();
+	if(to_return==NULL) return NULL;
+    if ((directory = opendir(archive_folder)) == NULL) {delete_linked_list(to_return, nop); return NULL;}
+	while ((file_entity = readdir(directory)) != NULL) {
+		if (strlen2(file_entity->d_name) == 17 && strcmp(file_entity->d_name+13, ".csv") == 0) {
+			file_entity->d_name[13] = 0x00;
+			uint64_t* lol = (uint64_t*) malloc(sizeof(uint32_t));
+			*lol = (uint64_t) str_to_int64_t(file_entity->d_name);
+			append_data_to_list(to_return, lol);
+		}
+	}
+	closedir(directory);
+    return to_return;
 }
-// Return LinkedList with apontador to null
 
-//TODO: Define this prototype
-void print_book_name(const char* archive_folder, uint32_t uid);
-// Prints a not newline terminated name for the uid provided
+void print_book_name(const char* archive_folder, uint64_t uid){
+	char buffer[7];
+	buffer[6] = 0x00;
+	buffer[0] = 0x00;
+	while(archive_folder[(uint8_t) buffer[0]]!=0x0A) buffer[0]++;
+	char file_path[buffer[0]+18];
+	snprintf(file_path, sizeof(file_path), "%s%13lu.csv", archive_folder, uid);
+	fflush(stdout);
+	FILE* file = fopen(file_path, "rb");
+	if(file==NULL){printf("ERROR!\n"); return;}
+	fflush(stdout);
+	fseek(file, 6, SEEK_SET);
+	int8_t bytesRead;
+	while(1){
+		bytesRead = fread(buffer, 1, 6, file);
+		if (bytesRead == 0) break;
+		for (bytesRead--; bytesRead >= 0; bytesRead--) {
+			if (buffer[bytesRead] == 0x0A) {
+				buffer[bytesRead] = 0x00;
+				printf("%s\n", buffer);
+				fclose(file);
+				return;
+			}
+		}
+		printf("%s", buffer);
+	}
+}
 
 void print_name(const char* database_name, uint32_t name_offset){
 	FILE* file;
@@ -371,9 +385,14 @@ void print_book_data(BOOK* data){
 		}
 	}
 
+	void print_lol(void* a){
+		printf("ID: %ld\n", *(uint64_t*)a);
+		print_book_name(BOOK_ARCHIVE_DIR, *(uint64_t*)a);
+		return;
+	}
 
 	int main() {
-		uint8_t mode = 1;
+		uint8_t mode = 2;
 		if (mode==0){
 			const char* filename = "./assets/sys_shadow.csv";
 			char to_check[10];
@@ -400,6 +419,12 @@ void print_book_data(BOOK* data){
 			print_isbn_name(book);
 			delete_linked_list(book->queue_for_students, free);
 			free(book);
+		}
+		else if (mode==2){
+			LinkedList* lol = get_book_ids(BOOK_ARCHIVE_DIR);
+			printf("Size: %d\n", lol->size);
+			traverse_list(lol, print_lol);
+			delete_linked_list(lol, free);
 		}
 		return 0;
 	}

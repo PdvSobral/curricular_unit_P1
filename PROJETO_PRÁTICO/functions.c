@@ -88,6 +88,8 @@ uint32_t strlen2(const char *str) {
 }
 #endif
 
+void nop(void *ptr){(void)ptr;return;}
+
 struct termios original_tio;
 void disable_ctrl_d(){
     struct termios new_tio;
