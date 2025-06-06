@@ -103,12 +103,11 @@ ACCOUNT* get_user_by_id(const char* database_name, const char* id){
 	return NULL;
 }
 
-//TODO: Define this prototype
 BOOK* get_book_by_id(const char* archive_folder, char id[14]){
 	/*
 	Return NULL if no book, else book info in struct
 	Arguments:
-		const char* archive_folder: Name of the folder containing the book files. Must exist
+		const char* archive_folder: Name of the folder containing the book files. Must exist and contain a slash (/) at the end
 		const char id[14]:			String with 13 numbers (ISBN-13) + 0x00
 	Return:
 		BOOK* | NULL : Returns a pointer to a book object corresponding to the id. Null if an error ocurred or it was not found.
@@ -118,12 +117,9 @@ BOOK* get_book_by_id(const char* archive_folder, char id[14]){
 	book->uid = 0;
 	while(archive_folder[book->uid] != 0x00) book->uid++;
     char file_path[book->uid+18];
-    snprintf(file_path, book->uid+18, "%s%s.csv", archive_folder, id); // Folder has to come with / | And 18 because it counts 0x00
+    snprintf(file_path, book->uid+18, "%s%s.csv", archive_folder, id); // 18 because it counts 0x00
     FILE* file = fopen(file_path, "rb");
     if (file == NULL) {free(book); return NULL;};
-	/*
-	uint32_t description_offset; 		// Description position in the file, reads until \n
-	*/
 	char buffer[7]; // it is going to read 6 + 0x00;
 	int8_t bytesRead;
 	buffer[6] = 0x00;  // protect against runaway string
@@ -137,8 +133,7 @@ BOOK* get_book_by_id(const char* archive_folder, char id[14]){
 		if (bytesRead == 0) break;
 		for (bytesRead--; bytesRead >= 0; bytesRead--) {
 			if (buffer[bytesRead] == 0x0A) {
-				bytesRead--;
-				fseek(file, -1*bytesRead, SEEK_CUR);
+				fseek(file, -1*(5-bytesRead), SEEK_CUR);
 				break;
 			}
 		}
@@ -150,26 +145,21 @@ BOOK* get_book_by_id(const char* archive_folder, char id[14]){
 		if (bytesRead == 0) break;
 		for (bytesRead--; bytesRead >= 0; bytesRead--) {
 			if (buffer[bytesRead] == 0x0A) {
-				printf("%d -> ", bytesRead);
-				bytesRead--;
-				fseek(file, -1*bytesRead, SEEK_CUR);
+				fseek(file, -1*(5-bytesRead), SEEK_CUR);
 				break;
 			}
 		}
-		pause_();
 	}
 	book->queue_offset = ftell(file);
 	book->queue_for_students = create_linked_list();
 	uint32_t* lol;
 	while(1){
-		bytesRead = fread(buffer, 6, 5, file);
-		if (bytesRead == 0) break;
+		bytesRead = fread(buffer, 1, 6, file);
+		if (bytesRead == 0 || buffer[0] == 0x0A) break;
 		lol = malloc(sizeof(uint32_t));
 		*lol = (uint32_t) str_to_int64_t(buffer);
 		append_data_to_list(book->queue_for_students, lol);
-		for (; bytesRead > 0; bytesRead--) {
-			if (buffer[bytesRead] == '\n') break;
-		}
+		if (buffer[5] == 0x0A) break;
 	}
     fclose(file);
     return book;
@@ -342,8 +332,9 @@ void print_book_data(BOOK* data){
 	printf("ISBN: %lu\n", data->uid);
 	printf("Requested by: %u\n", data->requested_by);
 	printf("Description Offset: %u\n", data->description_offset);
-	printf("Queue Size: %d\n", data->queue_for_students->size);
 	printf("Queue Offset: %u\n", data->queue_offset);
+	printf("Queue Size: %d\n", data->queue_for_students->size);
+	if(data->queue_for_students->size!=0) printf("First on queue %u\n", *((uint32_t*)data->queue_for_students->head->data));
 }
 
 
@@ -363,8 +354,14 @@ void print_book_data(BOOK* data){
 		}
 		else if (mode==1){
 			BOOK* book;
+			book = get_book_by_id("./assets/books/", "9789727229352");  // 9789727221561 | 9789727229352
+			if(book==NULL){printf("Book file not found."); return 1;}
+			print_book_data(book);
+			delete_linked_list(book->queue_for_students, free);
+			free(book);
+			printf("------------");
 			book = get_book_by_id("./assets/books/", "9789727221561");
-			printf("Pointer: %p\n", book);
+			if(book==NULL){printf("Book file not found."); return 1;}
 			print_book_data(book);
 			delete_linked_list(book->queue_for_students, free);
 			free(book);
