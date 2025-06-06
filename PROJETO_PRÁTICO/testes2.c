@@ -10,7 +10,7 @@
 #include "functions.c"
 #include "database_helper.c"
 
-#define MAX_INPUT 255
+#define MAX_INPUT 7
 #define FILE_PATH "./none.txt"
 
 // Returns the length in bytes of the UTF-8 character starting with byte ch
@@ -22,9 +22,8 @@ int utf8_char_length(uint8_t ch) {
 	return 1;
 }
 
-// Check if byte is a UTF-8 continuation byte (i.e., starts with 10xxxxxx)
 uint8_t is_utf8_continuation(uint8_t ch) {
-	return (ch & 0xC0) == 0x80;
+	return ch >= 0x80 && ch < 0xC0;
 }
 
 void end_file(FILE* file_to_end){
@@ -38,40 +37,49 @@ void end_file(FILE* file_to_end){
 	return;
 }
 
-uint8_t read_name_and_append_to_file(const char* file_name, uint8_t max_characters_length){
-    printf("Enter name: ");
-    fflush(stdout);
-
+uint8_t read_text_and_append_to_file(const char* file_name, uint8_t max_characters_length, uint8_t new_line){
     touch(file_name);
-    FILE* file = fopen(file_name, "ab+");
+    FILE* file = fopen(file_name, "rb+");  // for testing
     if (file == NULL) return 1;
-
     fseek(file, 0, SEEK_END);
-
     uint8_t ch;
     uint8_t string_len_in_chars = 0;
     uint8_t char_len;
     while (1){
         ch = getch();
-        printf("%d", ch);
         if (ch == 0x0A) break;
+        if (ch == 0x1B) {
+			if ((ch = getch()) == 0x5B) {
+				if ((ch = getch()) >= 'A' && ch <= 'F'){}
+				else if (ch == '2'){
+					if( (ch = getch()) == '~'){}
+					if( ( ch >= '0' && ch <= '4' ) && (ch = getch()) == '~' ){}
+				}
+				else if ((ch >= '3' && ch <= '6') && (ch = getch()) == '~') {}
+				else if (ch == '1' && ( (ch = getch()) == '5' || (ch >= '7' && ch <= '9') ) && (ch = getch()) == '~'){}
+			} else if (ch == 0x4F) {
+				ch = getch();
+				if (ch >= 'P' && ch <= 'S') {}
+			}
+		}
         else if (ch == 0x7F || ch == 0x08){  // Backspace && Delete
-        	printf("DELETING");
             if (string_len_in_chars > 0) {
                 string_len_in_chars--;
-                do {
-                    fseek(file, -1, SEEK_CUR);
+                printf("\033[1D \033[1D");
+                fseek(file, -1, SEEK_CUR);
+                do {  // check if the byte is an UTF continuation bite. If it is, 'delete' too.
                     ch = fgetc(file);
                     fseek(file, -1, SEEK_CUR);
-                    if (is_utf8_continuation(ch) != 0) break;
+					if (utf8_char_length(ch)!=1) break;
+                    if (is_utf8_continuation(ch) == 0) break;
+                    fseek(file, -1, SEEK_CUR); // if it is a continuation byte, delete it and continue the loop
                 } while (1);
-                printf("\033[1D \033[1D");
             }
             fflush(stdout);
         }
-        else {
-            if (string_len_in_chars + 1 >= max_characters_length) continue;
-            fputc(ch, file); putchar(ch);
+        else if (string_len_in_chars < max_characters_length){
+            fwrite(&ch, sizeof(uint8_t), 1, file);
+            putchar(ch);
             // Write remaining bytes if multibyte
 			char_len = utf8_char_length(ch);
             for (uint8_t i = 1; i < char_len; ++i) {
@@ -79,19 +87,21 @@ uint8_t read_name_and_append_to_file(const char* file_name, uint8_t max_characte
                 fputc(ch, file); putchar(ch);
             }
             string_len_in_chars++;
-            fflush(stdout);
         }
+        fflush(stdout);
     }
     putchar(0x0A);
-    fputc(0x0A, file);
+    if(new_line==1) fputc(0x0A, file);
     end_file(file);
     fclose(file);
     return 0;
 }
 
 int32_t main(){
+	printf("Introduce the message: ");
+	fflush(stdout);
 	uint8_t returned;
-	returned = read_name_and_append_to_file(FILE_PATH, MAX_INPUT);
+	returned = read_text_and_append_to_file(FILE_PATH, MAX_INPUT, 0);
 	printf("\n\nReturned %u\n", returned);
 	return 0;
 }
