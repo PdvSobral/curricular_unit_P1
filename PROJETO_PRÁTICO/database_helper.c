@@ -19,10 +19,10 @@ This file contains the functions developed to abstract the main program to how t
 #include <stdint.h>			// uint8_t
 #include <stdio.h>	    	// printf
 #include <string.h>			// strcpy
+#include <dirent.h>
 #include "linked_lists.c"
 #include "typedefs.c"
 #include "functions.c"
-#include <dirent.h>
 
 LinkedList* get_users_ids(const char* database_name){
 	FILE* file;
@@ -107,17 +107,13 @@ ACCOUNT* get_user_by_id(const char* database_name, const char* id){
 BOOK* get_book_by_id(const char* archive_folder, const char* id){
 	DIR* dir;
 	struct dirent* entry;
-
 	dir= opendir(archive_folder);
 	if (!dir) return NULL;
 	// Percorre os ficheiros do diretório
-	while(entry = readdir(dir)!=NULL){
-		if(entry==id){
-			return 0;
-			break;
-		}
-		
+	while((entry = readdir(dir))!=NULL){
+		if((char*) entry == (char*) id) return 0;
 	}
+	return NULL;
 }
 // Return NULL if no book, else book info in struct
 
@@ -128,10 +124,10 @@ LinkedList* get_book_ids(const char* archive_folder) {
     LinkedList* list = create_linked_list();
 	// Abrir o diretório
     dir = opendir(archive_folder);
-    if (!dir) return list;
+    if (dir == NULL) return list;
 	// Percorre os ficheiros do diretório
     while ((entry = readdir(dir)) != NULL) {
-        size_t len = strlen(entry->d_name);
+        uint32_t len = strlen2(entry->d_name); // FIXME: Probably later make it 16
         // Verifica se é ficheiro .csv com 13 dígitos no nome
         if (len == 17 && strcmp(entry->d_name + len - 4, ".csv") == 0) {
             char isbn_str[14] = {0};
