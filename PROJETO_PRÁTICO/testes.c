@@ -1,4 +1,3 @@
-//TODO: Review this GPT code
 #pragma GCC warning " DO NOT COMPILE AND RUN, IT'S FULL GPT!!"
 #define __main__
 
