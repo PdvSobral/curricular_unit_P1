@@ -137,7 +137,6 @@ void overwrite_password(const char* database_name, uint32_t name_offset, char* b
 	return;
 }
 
-void print_account_data(ACCOUNT* data){
 void touch(const char* database_name){
 	if (access(database_name, F_OK) == -1) {
 		FILE* file = fopen(database_name, "wb");
@@ -224,6 +223,13 @@ uint8_t read_text_and_append_to_file(const char* file_name, uint8_t max_characte
     end_file(file);
     fclose(file);
     return 0;
+}
+
+void print_account_data(ACCOUNT* data){
+	printf("uID: %d\n", data->uid);
+	printf("MD5: %s\n", data->password);
+	printf("Type: %s\n", data->type==1?"Librarian":"Student");
+	printf("Name Offset: %d\n", data->name_offset);
 }
 
 #ifdef __database_helper__
