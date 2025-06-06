@@ -18,6 +18,7 @@ For now, it's just an adaptation in progress of another program.
 #include <signal.h>		// -> To remap CTRL+C
 #include <string.h>		// strcmp, strlens
 #include <unistd.h>		// sleep, STDIN_FILENO
+#include <dirent.h>		// for directory listing
 
 #ifndef psystem
 	#pragma GCC warning "Loaded standard modules. Please use strlen2 instead of strlen."
@@ -489,7 +490,7 @@ uint8_t change_password(){
 	return 0;
 }
 
-uint8_t  add_book(){
+uint8_t add_book(){
 	char title[MAX_TITLE_LENGTH], caminho[31]="assets/books/1111111111111.csv", description[MAX_TITLE_LENGTH];
 	char id_book_str[15];
 	
@@ -511,7 +512,7 @@ uint8_t  add_book(){
     fclose(file);
     printf("Account registered successfully.\n");
     pause_();
-
+	return 0;
 }
 
 /*void check_book_info(){
@@ -564,7 +565,7 @@ void list_book_by_ISBN(){
 */
 void print_isbn_name(void* a){
     BOOK* book = (BOOK*)a;
-    printf("ISBN: %013d | Título: %s\n", book->uid, book->name);
+    printf("ISBN: %013ld | Título: %s\n", book->uid, book->name);
 }
 
 void list_available_books(){ 
