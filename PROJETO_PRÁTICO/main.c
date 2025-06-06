@@ -580,6 +580,7 @@ void list_available_books(){
     traverse_list(books, print_isbn_name);
     pause_();
 }
+
 // MENUS
 void mng_student_account(){
 	/*
