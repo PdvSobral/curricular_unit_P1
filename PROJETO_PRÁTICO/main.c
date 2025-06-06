@@ -514,7 +514,7 @@ uint8_t add_book(){
 	return 0;
 }
 
-/*void check_book_info(){
+uint8_t check_book_info(){
 	char id_book_str[15];
 	printf("Insert ISBN Book: ");
 	read_n_chars(14, id_book_str);
@@ -523,26 +523,17 @@ uint8_t add_book(){
 		pause_();
 		return 2;
 	}
-	// TODO: IMPLEMENTAR ESTA FUNÇÃO
 	BOOK* book = get_book_by_id(BOOK_ARCHIVE_DIR, id_book_str);
 	if (book==NULL){
 		printf("Book not found!\n");
 		pause_();
 		return 2;
 	}
-	// TODO: IMPLEMENTAR ESTA FUNÇÃO
-	//print_book_data(BOOK_ARCHIVE_DIR, id_book_str);
+	print_book_data(book);
 	pause_();
 	return 0;
 }
-
-void print_isbn_name(void* a){
-	BOOK* book = (BOOK*)a;
-	//printf("%d -> ", book->uid);
-	printf("%s\n", book->name);
-	//TODO: Although for now is a string, later maybe make it read directly from file
-	// print_book_name(book->name);
-}
+/*
 int32_t compare_ISBN(void* a, void* b){
 	BOOK* a2 = (BOOK*) a;
 	BOOK* b2 = (BOOK*) b;
@@ -648,6 +639,7 @@ void student_account(){
 			};
 		} else
 		switch(_escolha_menu){
+			case 5: check_book_info(); break;
 			case 6: mng_student_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
@@ -700,6 +692,7 @@ void biblman_account(){
 		} else
 		switch(_escolha_menu){
 			case 0: break;
+			case 5: check_book_info(); break;
 			case 6: mng_biblman_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n");
 		}
