@@ -27,7 +27,7 @@ The pdf is present in the same repository as this program.
 
 
 // Especificações do cliente
-#define CABECALHO_LEN 50
+#define CABECALHO_LEN 70
 #define CLEAR 1
 
 
