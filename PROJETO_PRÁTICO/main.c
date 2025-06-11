@@ -490,6 +490,7 @@ uint8_t change_password(){
 }
 
 uint8_t add_book(){
+	// TODO: To make new interface
 	char title[MAX_TITLE_LENGTH], caminho[31]="assets/books/1111111111111.csv", description[MAX_TITLE_LENGTH];
 	char id_book_str[15];
 	
@@ -535,35 +536,35 @@ uint8_t check_book_info(){
 }
 
 void print_isbn_name(void* a){
-		BOOK* book = (BOOK*)a;
-		char buffer[7];
-		buffer[6] = 0x00;
-		buffer[0] = 0x00;
-		while(BOOK_ARCHIVE_DIR[(uint8_t) buffer[0]]!=0x0A) buffer[0]++;
-		printf("ISBN: %013lu -> Título: ", book->uid);
-		fflush(stdout);
-		char file_path[buffer[0]+18];
-		snprintf(file_path, sizeof(file_path), "%s%13lu.csv", BOOK_ARCHIVE_DIR, book->uid);
-		fflush(stdout);
-		FILE* file = fopen(file_path, "rb");
-		if(file==NULL){printf("ERROR!\n"); return;}
-		fflush(stdout);
-		fseek(file, 6, SEEK_SET);
-		int8_t bytesRead;
-		while(1){
-			bytesRead = fread(buffer, 1, 6, file);
-			if (bytesRead == 0) break;
-			for (bytesRead--; bytesRead >= 0; bytesRead--) {
-				if (buffer[bytesRead] == 0x0A) {
-					buffer[bytesRead] = 0x00;
-					printf("%s\n", buffer);
-					fclose(file);
-					return;
-				}
+	BOOK* book = (BOOK*)a;
+	char buffer[7];
+	buffer[6] = 0x00;
+	buffer[0] = 0x00;
+	while(BOOK_ARCHIVE_DIR[(uint8_t) buffer[0]]!=0x0A) buffer[0]++;
+	printf("ISBN: %013lu -> Título: ", book->uid);
+	fflush(stdout);
+	char file_path[buffer[0]+18];
+	snprintf(file_path, sizeof(file_path), "%s%13lu.csv", BOOK_ARCHIVE_DIR, book->uid);
+	fflush(stdout);
+	FILE* file = fopen(file_path, "rb");
+	if(file==NULL){printf("ERROR!\n"); return;}
+	fflush(stdout);
+	fseek(file, 6, SEEK_SET);
+	int8_t bytesRead;
+	while(1){
+		bytesRead = fread(buffer, 1, 6, file);
+		if (bytesRead == 0) break;
+		for (bytesRead--; bytesRead >= 0; bytesRead--) {
+			if (buffer[bytesRead] == 0x0A) {
+				buffer[bytesRead] = 0x00;
+				printf("%s\n", buffer);
+				fclose(file);
+				return;
 			}
-			printf("%s", buffer);
 		}
+		printf("%s", buffer);
 	}
+}
 void print_isbn_name2(void* a){
 	uint64_t* book = (uint64_t*)a;
 	char buffer[7];
@@ -626,6 +627,42 @@ void list_available_books(){
     pause_();
 }
 
+int32_t list_books_alphabeticly_key(void* a, void* b){ // receives uint64*
+	FILE* file1;
+	FILE* file2;
+	char buffer1 = 0x00;
+	char buffer2 = 0x00;
+
+	while(BOOK_ARCHIVE_DIR[(uint8_t) buffer1]!=0x00) buffer1++;
+	char file_path[buffer1+18];
+
+	snprintf(file_path, sizeof(file_path), "%s%13lu.csv", BOOK_ARCHIVE_DIR, *(uint64_t*) a);
+	file1 = fopen(file_path, "rb");
+	if(file1==NULL){printf("ERROR!\n"); fflush(stdout); return 0;}
+	fseek(file1, 6, SEEK_SET);
+
+	snprintf(file_path, sizeof(file_path), "%s%13lu.csv", BOOK_ARCHIVE_DIR, *(uint64_t*) b);
+	file2 = fopen(file_path, "rb");
+	if(file2==NULL){printf("ERROR!\n"); fclose(file1); fflush(stdout); return 0;}
+	fseek(file2, 6, SEEK_SET);
+
+	while(1) {
+        buffer1 = tolower(fgetc(file1));
+        buffer2 = tolower(fgetc(file2));
+        if (buffer1==0x0A && buffer2==0x0A) return 0;
+		if (buffer1 == 0x0A) return 1;
+		else if (buffer2 == 0x0A) return -1;
+        if (buffer1 != buffer2) return buffer1 - buffer2;
+    }
+}
+void list_books_alphabeticly(){
+	LinkedList* all_isbns = get_book_ids(BOOK_ARCHIVE_DIR);
+	three_way_quick_sort(all_isbns, list_books_alphabeticly_key);
+	printf("Size->%u\n", all_isbns->size);
+	traverse_list(all_isbns, print_isbn_name2);
+	pause_();
+}
+
 // MENUS
 void mng_student_account(){
 	/*
@@ -670,6 +707,7 @@ void student_account(){
 		} else
 		switch(_escolha_menu){
 			case 2: list_book_by_ISBN(); break;
+			case 3: list_books_alphabeticly(); break;
 			case 5: check_book_info(); break;
 			case 6: mng_student_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n"); pause_();
@@ -724,6 +762,7 @@ void biblman_account(){
 		switch(_escolha_menu){
 			case 0: break;
 			case 2: list_book_by_ISBN(); break;
+			case 3: list_books_alphabeticly(); break;
 			case 5: check_book_info(); break;
 			case 6: mng_biblman_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n"); pause_();
