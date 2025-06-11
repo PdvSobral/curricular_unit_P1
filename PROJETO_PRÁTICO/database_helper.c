@@ -351,6 +351,42 @@ void print_book_data(BOOK* data){
 	if(data->queue_for_students->size!=0) printf("First on queue %u\n", *((uint32_t*)data->queue_for_students->head->data));
 }
 
+uint8_t log_requisition(ACCOUNT* user, BOOK* book, const char* file_path){
+	FILE* file;
+    file = fopen(file_path, "a");
+    if (file == NULL) {
+        return 0;
+    }
+    fprintf(file, "%d,%s,%s,%s\n", user->uid, book->name, book->description, get_current_date_string());
+
+    // TODO: Aqui está uma cópia da função print_book_name, altera à vontade.
+    char buffer[7];
+	buffer[6] = 0x00;
+	buffer[0] = 0x00;
+	while(archive_folder[(uint8_t) buffer[0]]!=0x0A) buffer[0]++;
+	char file_path[buffer[0]+18];
+	snprintf(file_path, sizeof(file_path), "%s%13lu.csv", archive_folder, uid);
+	fflush(stdout);
+	FILE* file = fopen(file_path, "rb");
+	if(file==NULL){printf("ERROR!\n"); return;}
+	fflush(stdout);
+	fseek(file, 6, SEEK_SET);
+	int8_t bytesRead;
+	while(1){
+		bytesRead = fread(buffer, 1, 6, file);
+		if (bytesRead == 0) break;
+		for (bytesRead--; bytesRead >= 0; bytesRead--) {
+			if (buffer[bytesRead] == 0x0A) {
+				buffer[bytesRead] = 0x00;
+				printf("%s\n", buffer); // TODO: MUDA ESTA LINHA
+				fclose(file);
+				return;
+			}
+		}
+		printf("%s", buffer); // TODO: MUDA ESTA LINHA
+	}
+
+}
 
 #ifdef __database_helper__
 	const char* BOOK_ARCHIVE_DIR = "./assets/books/"; // MUST INCLUDE THE SLASH (/), parts of the code and buffers depend on that
