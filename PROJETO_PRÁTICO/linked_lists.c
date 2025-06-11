@@ -488,7 +488,6 @@ void three_way_partition(LinkedList* list, LinkedList* less, LinkedList* equal, 
     */
     NODE* current = list->head;
     void* pivot = current->data;
-
     while (current != NULL) {
         int32_t cmp = compare(current->data, pivot);
         if (cmp < 0) {
@@ -562,6 +561,7 @@ void sort_list(LinkedList* list, int32_t (*compare)(void*, void*)) {
 }
 
 void three_way_quick_sort(LinkedList* list, int32_t (*compare)(void*, void*)) {
+	// TODO: it is not freeing the ones that are lost and recreated... I will have to solve this.
  	if (list == NULL || list->head == NULL || list->head->next == NULL) return;
 
     LinkedList* less = create_linked_list();

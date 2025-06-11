@@ -22,11 +22,10 @@ typedef struct _account{
 	char password[33]; 		// MD5, 32 + \0
 } ACCOUNT;
 
-typedef struct _book{
+typedef struct _book{					// name offset is always 6
 	uint64_t uid;      					// Unique ID, ISBN-13
-	char name[100];         			// Name
-	uint8_t quantity;					// How many books are there in the bibl system
-	char description[100]; 				// Very long string :), probably end up using offsets like name in account
-	LinkedList* requested_by;  			// Contains a list of users that currently have the book
-	LinkedList* queue_for_students;	    // Maybe later a file??
+	uint32_t description_offset; 		// Description position in the file, reads until \n
+	uint32_t queue_offset; 				// Qeue position in the file, reads until \n, write from here on
+	uint32_t requested_by;  			// uID of the user that currently has the book
+	LinkedList* queue_for_students;	    // List of uint32_t, the uIDs for the accounts in queue
 } BOOK;

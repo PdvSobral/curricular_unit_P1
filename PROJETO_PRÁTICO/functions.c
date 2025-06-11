@@ -27,7 +27,7 @@ The pdf is present in the same repository as this program.
 
 
 // Especificações do cliente
-#define CABECALHO_LEN 50
+#define CABECALHO_LEN 70
 #define CLEAR 1
 
 
@@ -87,6 +87,8 @@ uint32_t strlen2(const char *str) {
     return count;
 }
 #endif
+
+void nop(void *ptr){(void)ptr;return;}
 
 struct termios original_tio;
 void disable_ctrl_d(){
