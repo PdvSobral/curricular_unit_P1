@@ -231,6 +231,9 @@ DATE get_current_date(DATE struct_data){
 	struct_data.day = time_maneger.tm_mday;
 	return struct_data;
 }
+TIME get_current_time(){
+	// TODO: Make this function so that it returns a structure containing the time. | MACUSER
+}
 int64_t str_to_int64_t(char *pointer_to_str){
 	/*
 	Função que converte um inteiro representado como str para um inteiro
