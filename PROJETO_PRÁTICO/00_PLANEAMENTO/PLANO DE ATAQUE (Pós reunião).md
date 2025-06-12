@@ -43,18 +43,18 @@
 2. uID do aluno é registado como requisitante.
 3. Caso o livro esteja indisponível, o ID do aluno é colocado numa fila de espera associada ao livro.
 4. Sistema deve registar a operação num ficheiro de texto onde cada linha contém: Nome do livro, ID do aluno, data da requisição.
-   - Tipo `[+] 2025-05-25 14:54 REQ uID_Aluno NomeLivro`?
+   - Tipo `[*] 2025-05-25 14:54 REQ uID_Aluno NomeLivro`?
    - Apenas quando requisita (muda de "dono") ou tmb quando adiciona à queue?
-   - Tipo `[+] 2025-05-25 14:54 QUE uID_Aluno NomeLivro`?
+   - Tipo `[*] 2025-05-25 14:54 QUE uID_Aluno NomeLivro`?
 
 
 #### Quando um livro é devolvido:
 1. o livro passa a estar requisitado ao primeiro aluno da fila, atualizando o ID do aluno associado ao livro.
    Ao estar vazia a lista, o primeiro termo será NULL, portanto resolvido.
 2. O sistema regista a operação num ficheiro de texto onde cada linha contém o nome do livro, o ID do aluno e a data da entrega.
-   - Tipo `[-] 2025-05-25 14:54 DEV uID_Aluno NomeLivro`
+   - Tipo `[*] 2025-05-25 14:54 DEV uID_Aluno NomeLivro`
    - E no registo presumo que tmb se tenha de fazer algo tipo:
-   - `[-] 2025-05-25 14:54 ARQ uID_Aluno NomeLivro`? (**Auto ReQuest, ou entao um DQU, de DeQUeue**)
+   - `[*] 2025-05-25 14:54 ARQ uID_Aluno NomeLivro`? (**Auto ReQuest, ou entao um DQU, de DeQUeue**)
       
    
 A aplicação deve ainda garantir que o seu estado de execução é guardado num ficheiro para que mais tarde

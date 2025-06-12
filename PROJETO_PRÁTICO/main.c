@@ -42,6 +42,7 @@ For now, it's just an adaptation in progress of another program.
 
 const char* USER_DATABASE = "./assets/sys_shadow.csv";
 const char* BOOK_ARCHIVE_DIR = "./assets/books/"; // MUST INCLUDE THE SLASH (/), parts of the code and buffers depend on that
+// TODO: To whom this may concern, add logging files, distinct checkout and return.
 static ACCOUNT CURRENT_LOGIN = {0, 999999999, 2, ""};
 
 // Defenition of the menu arrays
@@ -490,7 +491,7 @@ uint8_t change_password(){
 }
 
 uint8_t add_book(){
-	// TODO: To make new interface
+	// FIXME: To make new interface | PEDRO
 	char title[MAX_TITLE_LENGTH], caminho[31]="assets/books/1111111111111.csv", description[MAX_TITLE_LENGTH];
 	char id_book_str[15];
 	
@@ -615,7 +616,7 @@ void list_book_by_ISBN(){
 
 void list_available_books(){
     LinkedList* books;
-	//TODO: Implementar a função de listar livros disponíveis
+	//TODO: Implementar a função de listar livros disponíveis | PEDRO
     books = get_book_ids(BOOK_ARCHIVE_DIR);
     if (books == NULL || books->size == 0) {
         printf("Nenhum livro disponível encontrado!\n");
@@ -679,6 +680,7 @@ void mng_student_account(){
 		if(_escolha_menu==0) break;
 		clear_screen();
 		switch(_escolha_menu){
+			// TODO: Add case 1) Change account name | PEDRO
 			case 2: change_password(); break;
 			default: printf("\nFunção ainda não implementada!!\n"); pause_();
 		}
@@ -706,8 +708,10 @@ void student_account(){
 			};
 		} else
 		switch(_escolha_menu){
+			// TODO: case 1) Check out book  | Any + Loggin (MacUser)
 			case 2: list_book_by_ISBN(); break;
 			case 3: list_books_alphabeticly(); break;
+			// TODO: case 4) List available books | PEDRO (ou em caso de excesso de trabalho Alex)
 			case 5: check_book_info(); break;
 			case 6: mng_student_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n"); pause_();
@@ -731,6 +735,9 @@ void mng_biblman_account(){
 		if(_escolha_menu==0) break;
 		switch(_escolha_menu){
 			case 1: add_book(); break;
+			// TODO: case 2) Remove Book | ALEX
+			// TODO: case 3) Check return history | Any + Logging (MacUser)
+			// TODO: case 4) Remove old return history entries !! Depends on case 3 !! | PEDRO + Logging (MacUser)
 			case 5: regist(); break;
 			case 6: reset_password(); break;
 			case 7: change_password(); break;
@@ -761,8 +768,10 @@ void biblman_account(){
 		} else
 		switch(_escolha_menu){
 			case 0: break;
+			// TODO: case 1) Return Book | Any + Loggin (MacUser)
 			case 2: list_book_by_ISBN(); break;
 			case 3: list_books_alphabeticly(); break;
+			// TODO: case 4) List available books | PEDRO (ou em caso de excesso de trabalho Alex)
 			case 5: check_book_info(); break;
 			case 6: mng_biblman_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n"); pause_();
