@@ -233,6 +233,7 @@ DATE get_current_date(DATE struct_data){
 }
 TIME get_current_time(){
 	// TODO: Make this function so that it returns a structure containing the time. | MACUSER
+	return;
 }
 int64_t str_to_int64_t(char *pointer_to_str){
 	/*

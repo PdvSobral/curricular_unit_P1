@@ -20,9 +20,12 @@ This file contains the functions developed to abstract the main program to how t
 #include <stdio.h>	    	// printf
 #include <string.h>			// strcpy
 #include <dirent.h>
+#include <inttypes.h>		// for string formating
 #include "linked_lists.c"
 #include "typedefs.c"
 #include "functions.c"
+
+#define ISBN_FORMAT "%013" PRIu64
 
 LinkedList* get_users_ids(const char* database_name){
 	FILE* file;
@@ -190,7 +193,7 @@ void print_book_name(const char* archive_folder, uint64_t uid){
 	buffer[0] = 0x00;
 	while(archive_folder[(uint8_t) buffer[0]]!=0x0A) buffer[0]++;
 	char file_path[buffer[0]+18];
-	snprintf(file_path, sizeof(file_path), "%s%13llu.csv", archive_folder, uid);
+	snprintf(file_path, sizeof(file_path), "%s" ISBN_FORMAT ".csv", archive_folder, uid);
 	fflush(stdout);
 	FILE* file = fopen(file_path, "rb");
 	if(file==NULL){printf("ERROR!\n"); return;}
@@ -343,7 +346,7 @@ void print_account_data(ACCOUNT* data){
 }
 
 void print_book_data(BOOK* data){
-	printf("ISBN: %llu\n", data->uid);
+	printf("ISBN: " ISBN_FORMAT "\n", data->uid);
 	printf("Requested by: %u\n", data->requested_by);
 	printf("Description Offset: %u\n", data->description_offset);
 	printf("Queue Offset: %u\n", data->queue_offset);
@@ -368,7 +371,7 @@ uint8_t log_requisition(ACCOUNT* user, BOOK* book, const char* file_path, const 
 	buffer[0] = 0x00;
 	while(archive_folder[(uint8_t) buffer[0]]!=0x0A) buffer[0]++;
 	char file_path2[buffer[0]+18];
-	snprintf(file_path2, sizeof(file_path2), "%s%13llu.csv", archive_folder, book->uid);
+	snprintf(file_path2, sizeof(file_path2), "%s" ISBN_FORMAT ".csv", archive_folder, book->uid);
 	FILE* file2 = fopen(file_path, "rb");
 	if(file2==NULL){printf("ERROR!\n"); fflush(stdout); return 1;}
 	fseek(file, 6, SEEK_SET);

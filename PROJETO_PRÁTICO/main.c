@@ -19,6 +19,7 @@ For now, it's just an adaptation in progress of another program.
 #include <string.h>		// strcmp, strlens
 #include <unistd.h>		// sleep, STDIN_FILENO
 #include <dirent.h>		// for directory listing
+#include <inttypes.h>	// for string formating
 
 #ifndef psystem
 	#pragma GCC warning "Loaded standard modules. Please use strlen2 instead of strlen."
@@ -39,6 +40,11 @@ For now, it's just an adaptation in progress of another program.
 #define MAX_PASSWORD_LENGTH 30
 #define MAX_TITLE_LENGTH 	100
 #define MAX_NAME_LENGHT 	70
+
+#ifndef ISBN_FORMAT
+// TODO: Implement this in all ISBN printings and uses.
+#define ISBN_FORMAT "%013" PRIu64
+#endif
 
 const char* USER_DATABASE = "./assets/sys_shadow.csv";
 const char* BOOK_ARCHIVE_DIR = "./assets/books/"; // MUST INCLUDE THE SLASH (/), parts of the code and buffers depend on that
@@ -537,65 +543,34 @@ uint8_t check_book_info(){
 }
 
 void print_isbn_name(void* a){
-	BOOK* book = (BOOK*)a;
-	char buffer[7];
-	buffer[6] = 0x00;
-	buffer[0] = 0x00;
-	while(BOOK_ARCHIVE_DIR[(uint8_t) buffer[0]]!=0x0A) buffer[0]++;
-	printf("ISBN: %013lu -> Título: ", book->uid);
-	fflush(stdout);
-	char file_path[buffer[0]+18];
-	snprintf(file_path, sizeof(file_path), "%s%13lu.csv", BOOK_ARCHIVE_DIR, book->uid);
-	fflush(stdout);
-	FILE* file = fopen(file_path, "rb");
-	if(file==NULL){printf("ERROR!\n"); return;}
-	fflush(stdout);
-	fseek(file, 6, SEEK_SET);
-	int8_t bytesRead;
-	while(1){
-		bytesRead = fread(buffer, 1, 6, file);
-		if (bytesRead == 0) break;
-		for (bytesRead--; bytesRead >= 0; bytesRead--) {
-			if (buffer[bytesRead] == 0x0A) {
-				buffer[bytesRead] = 0x00;
-				printf("%s\n", buffer);
-				fclose(file);
-				return;
-			}
-		}
-		printf("%s", buffer);
-	}
+    uint64_t* book_isbn_int = (uint64_t*)a;
+    char buffer[7];
+    buffer[6] = 0x00;
+    buffer[0] = 0x00;
+    while(BOOK_ARCHIVE_DIR[(uint8_t) buffer[0]]!=0x00) buffer[0]++;
+    printf("ISBN: " ISBN_FORMAT " -> Tittle: ", *book_isbn_int);
+    fflush(stdout);
+    char file_path[buffer[0]+18];
+    snprintf(file_path, sizeof(file_path), "%s" ISBN_FORMAT ".csv", BOOK_ARCHIVE_DIR, *book_isbn_int);
+    FILE* file = fopen(file_path, "rb");
+    if(file==NULL){printf("ERROR!\n"); fflush(stdout); return;}
+    fseek(file, 6, SEEK_SET);
+    int8_t bytesRead;
+    while(1){
+        bytesRead = fread(buffer, 1, 6, file);
+        if (bytesRead == 0) break;
+        for (bytesRead--; bytesRead >= 0; bytesRead--) {
+            if (buffer[bytesRead] == 0x0A) {
+                buffer[bytesRead] = 0x00;
+                printf("%s\n", buffer);
+                fclose(file);
+                return;
+            }
+        }
+        printf("%s", buffer);
+    }
 }
-void print_isbn_name2(void* a){
-	uint64_t* book = (uint64_t*)a;
-	char buffer[7];
-	buffer[6] = 0x00;
-	buffer[0] = 0x00;
-	while(BOOK_ARCHIVE_DIR[(uint8_t) buffer[0]]!=0x00) buffer[0]++;
-	printf("ISBN: %013lu -> Tittle: ", *book);
-	fflush(stdout);
-	char file_path[buffer[0]+18];
-	snprintf(file_path, sizeof(file_path), "%s%13lu.csv", BOOK_ARCHIVE_DIR, *book);
-	fflush(stdout);
-	FILE* file = fopen(file_path, "rb");
-	if(file==NULL){printf("ERROR!\n"); return;}
-	fflush(stdout);
-	fseek(file, 6, SEEK_SET);
-	int8_t bytesRead;
-	while(1){
-		bytesRead = fread(buffer, 1, 6, file);
-		if (bytesRead == 0) break;
-		for (bytesRead--; bytesRead >= 0; bytesRead--) {
-			if (buffer[bytesRead] == 0x0A) {
-				buffer[bytesRead] = 0x00;
-				printf("%s\n", buffer);
-				fclose(file);
-				return;
-			}
-		}
-		printf("%s", buffer);
-	}
-}
+
 void list_book_by_ISBN(){
 	LinkedList* books;
 	printf("Loading database...\n");
@@ -609,14 +584,31 @@ void list_book_by_ISBN(){
 	}
 	printf("Loading sucessfull. Printing requested data:\n");
 	fflush(stdout);
-	traverse_list(books, print_isbn_name2);
+	traverse_list(books, print_isbn_name);
 	pause_();
 	return;
 }
 
+int32_t is_book_available(void* a){
+	uint64_t* book_isbn_int = (uint64_t*)a;
+    char buffer[6];
+    buffer[5] = 0x00;
+    buffer[0] = 0x00;
+    while(BOOK_ARCHIVE_DIR[(uint8_t) buffer[0]]!=0x00) buffer[0]++;
+    char file_path[buffer[0]+18];
+    snprintf(file_path, sizeof(file_path), "%s" ISBN_FORMAT ".csv", BOOK_ARCHIVE_DIR, *book_isbn_int);
+    FILE* file = fopen(file_path, "rb");
+    if(file==NULL){printf("ERROR!\n"); fflush(stdout); return 3;}
+	int8_t bytesRead;
+	bytesRead = fread(buffer, 1, 5, file);
+	fclose(file);
+	if (bytesRead == 5) return strcmp(buffer, "00000")==0? 0 : 1;
+	printf("Corrupted file detected for ISBN: " ISBN_FORMAT "!\n", *book_isbn_int);
+	fflush(stdout);
+	return 1;
+}
 void list_available_books(){
     LinkedList* books;
-	//TODO: Implementar a função de listar livros disponíveis | PEDRO
     books = get_book_ids(BOOK_ARCHIVE_DIR);
     if (books == NULL || books->size == 0) {
         printf("Nenhum livro disponível encontrado!\n");
@@ -624,6 +616,7 @@ void list_available_books(){
         return;
     }
     printf("Livros disponíveis:\n");
+	remove_nodes(books, is_book_available, free);
     traverse_list(books, print_isbn_name);
     pause_();
 }
@@ -659,8 +652,7 @@ int32_t list_books_alphabeticly_key(void* a, void* b){ // receives uint64*
 void list_books_alphabeticly(){
 	LinkedList* all_isbns = get_book_ids(BOOK_ARCHIVE_DIR);
 	three_way_quick_sort(all_isbns, list_books_alphabeticly_key);
-	printf("Size->%u\n", all_isbns->size);
-	traverse_list(all_isbns, print_isbn_name2);
+	traverse_list(all_isbns, print_isbn_name);
 	pause_();
 }
 
@@ -711,7 +703,7 @@ void student_account(){
 			// TODO: case 1) Check out book  | Any + Loggin (MacUser)
 			case 2: list_book_by_ISBN(); break;
 			case 3: list_books_alphabeticly(); break;
-			// TODO: case 4) List available books | PEDRO (ou em caso de excesso de trabalho Alex)
+			case 4: list_available_books(); break;
 			case 5: check_book_info(); break;
 			case 6: mng_student_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n"); pause_();
@@ -737,7 +729,7 @@ void mng_biblman_account(){
 			case 1: add_book(); break;
 			// TODO: case 2) Remove Book | ALEX
 			// TODO: case 3) Check return history | Any + Logging (MacUser)
-			// TODO: case 4) Remove old return history entries !! Depends on case 3 !! | PEDRO + Logging (MacUser)
+			case 4: list_available_books(); break;
 			case 5: regist(); break;
 			case 6: reset_password(); break;
 			case 7: change_password(); break;
