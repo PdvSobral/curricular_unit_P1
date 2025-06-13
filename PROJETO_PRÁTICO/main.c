@@ -600,10 +600,10 @@ uint8_t add_book(){
 	char title[MAX_TITLE_LENGTH], caminho[31]="assets/books/1111111111111.csv", description[MAX_TITLE_LENGTH];
 	char id_book_str[15];
 	
-	printf("Insert ID Book: ");
+	printf("Insert Book's ISBN: ");
 	read_n_chars(14, id_book_str);
 	
-	if(strlen2(id_book_str)!=13) return 2;
+	if(strlen2(id_book_str)!=13) {printf("Invalid ISBN!\n"); fflush(stdout); pause_(); return 2;};
 	strcpy(caminho+13, id_book_str);
 	strcpy(caminho+26, ".csv");
 
@@ -625,35 +625,24 @@ uint8_t add_book(){
 }
 
 uint8_t remove_book(){
-	// FIXME: PEDRO check
-	//FIXME: Otimizar se houver tempo. Pedro: Em vez de abrir livro, apenas verificar se dá para abrir em 'r'.
 	char id_book_str[15];
 	printf("Insert ISBN Book: ");
 	read_n_chars(14, id_book_str);
-	if(strlen2(id_book_str)!=13){
-		printf("ISBN is not valid!\n");
-		pause_();
-		return 2;
-	}
-	BOOK* book=get_book_by_id(BOOK_ARCHIVE_DIR, id_book_str);
-	if(book==NULL){
-		printf("Book not found!\n");
-		pause_();
-		return 2;
-	}
-	book->requested_by = 0;
-	while (BOOK_ARCHIVE_DIR[(uint8_t) book->requested_by] != 0x00) book->requested_by++;
-	char file_path[(uint8_t) book->requested_by + 18]; // 18 = 13 + 5 + .csv + \0
-	snprintf(file_path, sizeof(file_path), "%s%13lu.csv", BOOK_ARCHIVE_DIR, book->uid);
-	delete_linked_list(book->queue_for_students, free);
-	free(book);
-	printf("%s\n", file_path);
-	 if (remove(file_path) == 0) {
-        printf("Book removed successfully!\n");
-    } else {
-        printf("Error: Unable to delete the file.\n");
-    }
+	if(strlen2(id_book_str)!=13) {printf("Invalid ISBN!\n"); fflush(stdout); pause_(); return 2;};
 
+	uint8_t _temp = 0;
+	while(BOOK_ARCHIVE_DIR[_temp] != 0x00) _temp++;
+    char file_path[_temp+18];
+    snprintf(file_path,sizeof(file_path), "%s%s.csv", BOOK_ARCHIVE_DIR, id_book_str);
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) return 1;
+	fclose(file);
+	if (remove(file_path) != 0) {printf("Error: Unable to delete the file.\n"); pause_(); return 2;}
+
+	char buffer_log[22+15];
+	snprintf(buffer_log, sizeof(buffer_log), "Book removed (ISBN: %s).", id_book_str);
+	logc_(MAIN_LOG, buffer_log);
+	printf("Book removed successfully!\n");
 	pause_();
 	return 0;
 }
@@ -808,6 +797,11 @@ void checkout_book(){
 		pause_();
 		return;
 	}
+	if (book->requested_by == CURRENT_LOGIN.uid){}
+	#pragma GCC error DO NOT RUN YET
+	// TODO: Finish the function | PEDRO
+
+
 	book->requested_by = 0;
     while (BOOK_ARCHIVE_DIR[(uint8_t) book->requested_by] != 0x00) book->requested_by++;
     char file_path[(uint8_t) book->requested_by + 18]; // 18 = 13 + 5 + .csv + \0
@@ -822,12 +816,8 @@ void checkout_book(){
     }
 	printf("Book found!\n");
 	pause_();
-
-
-
-
-
 }
+
 // MENUS
 void mng_student_account(){
 	/*
