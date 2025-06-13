@@ -798,7 +798,7 @@ void checkout_book(){
 		return;
 	}
 	if (book->requested_by == CURRENT_LOGIN.uid){}
-	#pragma GCC error DO NOT RUN YET
+	#pragma GCC error "DO NOT RUN YET"
 	// TODO: Finish the function | PEDRO
 
 
