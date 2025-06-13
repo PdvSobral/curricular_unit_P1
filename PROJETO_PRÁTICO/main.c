@@ -48,6 +48,8 @@ For now, it's just an adaptation in progress of another program.
 
 const char* USER_DATABASE = "./assets/sys_shadow.csv";
 const char* BOOK_ARCHIVE_DIR = "./assets/books/"; // MUST INCLUDE THE SLASH (/), parts of the code and buffers depend on that
+const char* MAIN_LOG = "./assets/main.log";
+const char* HIST_LOG = "./assets/history.log";
 // TODO: To whom this may concern, add logging files, distinct checkout and return.
 static ACCOUNT CURRENT_LOGIN = {0, 999999999, 2, ""};
 
@@ -99,6 +101,98 @@ const char mng_biblman_account_menu[][CABECALHO_LEN] = {
 };
 
 // FUNÇÕES
+
+uint8_t log_action(BOOK* book, const char* log_file_path, const char mode[4]){
+	/*
+	return:
+		0 -> Correcto!
+		1 -> File log NULL
+		2 -> File book NULL
+		3 -> Not suposed to get to the end, flux was broken
+	*/
+    FILE* file = fopen(log_file_path, "at");
+    if (file == NULL) return 1;
+
+    // Escreve data e UID do usuário
+    DATE date = get_current_date(date);
+    TIME times = get_current_time(times);
+    // [*] 2025-05-25 14:54 REQ uID_Aluno NomeLivro
+    fprintf(file, "[*] %04d-%02d-%02d %02d:%02d %s %d ", date.year, date.month, date.day, times.hour, times.minutes, mode, CURRENT_LOGIN.uid);
+
+    // Determina o tamanho do nome de pasta (até encontrar 0x00)
+    char buffer[7];
+    buffer[6] = 0x00;
+    buffer[0] = 0x00;
+    while ((uint8_t)BOOK_ARCHIVE_DIR[(uint8_t)buffer[0]] != 0x00) buffer[0]++;
+
+    // Cria o caminho do arquivo original
+    char file_path2[buffer[0] + 18];
+    snprintf(file_path2, sizeof(file_path2), "%s" ISBN_FORMAT ".csv", BOOK_ARCHIVE_DIR, book->uid);
+
+    // Abre o segundo arquivo (arquivo de onde o nome do livro serás lido)
+    FILE* file2 = fopen(file_path2, "rb");
+    if (file2 == NULL) {
+        fclose(file);
+        printf("ERROR OPENING BOOK FILE!\n");
+        fflush(stdout);
+        return 2;
+    }
+
+    int8_t bytesRead;
+    while (1) {
+        bytesRead = fread(buffer, 1, 6, file2);
+        if (bytesRead == 0) break;
+
+        for (bytesRead--; bytesRead >= 0; bytesRead--) {
+            if (buffer[bytesRead] == 0x0A) {
+                buffer[bytesRead] = 0x00;
+                fprintf(file, "%s\n", buffer); // Fim da linha, imprime com quebra
+                fclose(file2);
+                fclose(file);
+                return 0;
+            }
+        }
+        fprintf(file, "%s", buffer); // Continua imprimindo a linha
+    }
+	printf("Not suposed to get here!\n");
+	fflush(stdout);
+    fclose(file2);
+    fclose(file);
+    return 3;
+}
+
+uint8_t log_(const char* log_file_path, const char* msg){
+	/*
+	return:
+		0 -> Correcto!
+		1 -> File log NULL
+	*/
+    FILE* file = fopen(log_file_path, "at");
+    if (file == NULL) return 1;
+
+    DATE date = get_current_date(date);
+    TIME times = get_current_time(times);
+    fprintf(file, "[*] %04d-%02d-%02d %02d:%02d LOG 00000 %s\n", date.year, date.month, date.day, times.hour, times.minutes, msg);
+    fclose(file);
+    return 0;
+}
+
+uint8_t logc_(const char* log_file_path, const char* msg){
+	/*
+	return:
+		0 -> Correcto!
+		1 -> File log NULL
+	*/
+    FILE* file = fopen(log_file_path, "at");
+    if (file == NULL) return 1;
+
+    DATE date = get_current_date(date);
+    TIME times = get_current_time(times);
+    fprintf(file, "[*] %04d-%02d-%02d %02d:%02d LOG %5u %s\n", date.year, date.month, date.day, times.hour, times.minutes, CURRENT_LOGIN.uid, msg);
+    fclose(file);
+    return 0;
+}
+
 uint8_t login(uint8_t account_flag_type){
 	clear_screen();
 	cabecalho("LOGIN ", CABECALHO_LEN);
@@ -218,6 +312,9 @@ uint8_t login(uint8_t account_flag_type){
 									reset_line(CABECALHO_LEN);
 									print_between_format("LOGIN SUCESSFUL!", "\033[32m", CABECALHO_LEN, 1);
 									print_bottom(CABECALHO_LEN, 1);
+									char buffer_log[14+6];
+									snprintf(buffer_log, sizeof(buffer_log),"User %d logd in.", my_user->uid);
+									log_(MAIN_LOG, buffer_log);
 									CURRENT_LOGIN = *my_user;
 									free(my_user);
 									pause_();
@@ -243,10 +340,13 @@ uint8_t login(uint8_t account_flag_type){
 }
 
 void logout(){
+	char buffer[15+6];
+	snprintf(buffer, sizeof(buffer),"User %d logd out.", CURRENT_LOGIN.uid);
 	CURRENT_LOGIN.uid = 0;
 	CURRENT_LOGIN.name_offset = 999999999;
 	CURRENT_LOGIN.type = 2;
 	strcpy(CURRENT_LOGIN.password, "");
+	log_(MAIN_LOG, buffer);
 	return;
 }
 
@@ -505,8 +605,8 @@ uint8_t add_book(){
 	read_n_chars(14, id_book_str);
 	
 	if(strlen2(id_book_str)!=13) return 2;
-	strcpy(caminho+7, id_book_str);
-	strcpy(caminho+20, ".csv");
+	strcpy(caminho+13, id_book_str);
+	strcpy(caminho+26, ".csv");
 
 	printf("Insert Title: ");
 	read_n_chars(MAX_TITLE_LENGTH, title);
@@ -517,7 +617,10 @@ uint8_t add_book(){
     if (file == NULL) return 1;
     fprintf(file, "%05d:%s\n%s\n%05d\n", 0, title, description, 0);
     fclose(file);
-    printf("Account registered successfully.\n");
+    printf("Book registered successfully.\n");
+    char buffer[24+15];
+	snprintf(buffer, sizeof(buffer),"New book added (ISBN: %s).", id_book_str);
+	logc_(MAIN_LOG, buffer);
     pause_();
 	return 0;
 }
@@ -772,6 +875,12 @@ void biblman_account(){
 	return;
 }
 
+void handle_sigint_temp(int32_t sig){
+	char buffer[35+12];
+	snprintf(buffer, sizeof(buffer),"Received control interrupt signal %d.", sig);
+	log_(MAIN_LOG, buffer);
+	handle_sigint(sig);
+}
 int32_t main(void){
 	/*
 	Função primária do programa
@@ -781,12 +890,12 @@ int32_t main(void){
 		Nenhum
 	*/
 	#ifdef AGGRESSIVE
-		signal(SIGINT, handle_sigint);
+		signal(SIGINT, handle_sigint_temp);
 		disable_ctrl_d();
 	#endif
     fflush(stdin);
 	uint8_t escolha_menu;
-
+	log_(MAIN_LOG, "Program initiated.");
 	while (1){
 		clear_screen();
 		escolha_menu = menu("PLEASE CHOOSE ACCOUNT TYPE", CABECALHO_LEN, main_menu, len_main_menu, 1);
@@ -801,5 +910,6 @@ int32_t main(void){
 	#ifdef AGGRESSIVE
 		enable_ctrl_d();
 	#endif
+	log_(MAIN_LOG, "Program finished sucsesfully.");
 	return 0;
 }

@@ -232,13 +232,12 @@ DATE get_current_date(DATE struct_data){
 	return struct_data;
 }
 
-TIME get_current_time(){
-	TIME t;
+TIME get_current_time(TIME times){
     time_t now = time(NULL);			// Get Current UNIX Timestamp
     struct tm* local = localtime(&now);	// Convert to "normal" time
-    t.hour = local->tm_hour;
-    t.minutes = local->tm_min;
-    return t;
+    times.hour = local->tm_hour;
+    times.minutes = local->tm_min;
+    return times;
 }
 
 int64_t str_to_int64_t(char *pointer_to_str){
