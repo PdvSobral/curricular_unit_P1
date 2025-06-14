@@ -91,7 +91,7 @@ const uint8_t len_mng_biblman_account_menu = 8;
 const char mng_biblman_account_menu[][CABECALHO_LEN] = {
 	"Add book",
 	"Remove book",
-	"Check return history",
+	"Check book return history",
 	"Remove old return history entries",
 	"Create new account",
 	"Reset password to an account",
@@ -995,28 +995,34 @@ void change_name(){
 	return;
 }
 
-void return_history(){
-	printf("Loading return history...\n");
-	FILE* file = fopen(HIST_LOG, "r+");
+void print_return_history(){
+	printf("Loading book return history...\n");
+	FILE* file = fopen(HIST_LOG, "r");
 	if (file == NULL){
-		printf("No history to return.\n");
+		printf("Return history log file not found.\n");
 		pause_();
 		return;
 	}
-	printf("Reading history...\n");
-	 char line[256];
-    while (fgets(line, sizeof(line), file)) {
-        printf("%s", line);
-    }
-
+	char buffer[21];
+	buffer[20] = 0x00;
+	if (fread(buffer, 1, 20, file) == 0){
+		printf("No history to show!\n");
+		fclose(file);
+		pause_();
+		return;
+	}
+	printf("Current history:\n");
+	printf("%s", buffer);
+    while (fread(buffer, 1, 20, file) != 0) printf("%s", buffer);
     fclose(file);
     pause_();
-
+    return;
 }
 
 void remove_old_history_entries() {
+	// TODO: To review | PEDRO
     char input[10];
-    int n = 0;
+    uint16_t n = 0;
 
     printf("How many entries do you wish to remove? ");
     read_n_chars(9, input);
@@ -1028,7 +1034,7 @@ void remove_old_history_entries() {
         pause_();
         return;
     }
-
+	/*
     // Lê todas as linhas para memória
     char* lines[2048];
     size_t count = 0;
@@ -1045,7 +1051,6 @@ void remove_old_history_entries() {
         pause_();
         return;
     }
-
     
     file = fopen(HIST_LOG, "w");
     if (file == NULL) {
@@ -1059,10 +1064,11 @@ void remove_old_history_entries() {
         free(lines[i]);
     }
     fclose(file);
-
+	*/
     printf("Removed %d entries.\n", n);
     pause_();
 }
+
 // MENUS
 void mng_student_account(){
 	/*
@@ -1135,9 +1141,7 @@ void mng_biblman_account(){
 		switch(_escolha_menu){
 			case 1: add_book(); break;
 			case 2: remove_book(); break;
-			// TODO: case 3) Check return history | Any + Logging (MacUser)
-			case 3: return_history(); break;
-			// TODO: case 4) Remove old return history entries | Any + Logging (MacUser)
+			case 3: print_return_history(); break;
 			case 4: remove_old_history_entries(); break;
 			case 5: regist(); break;
 			case 6: reset_password(); break;
