@@ -995,6 +995,74 @@ void change_name(){
 	return;
 }
 
+void return_history(){
+	printf("Loading return history...\n");
+	FILE* file = fopen(HIST_LOG, "r+");
+	if (file == NULL){
+		printf("No history to return.\n");
+		pause_();
+		return;
+	}
+	printf("Reading history...\n");
+	 char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        printf("%s", line);
+    }
+
+    fclose(file);
+    pause_();
+
+}
+
+void remove_old_history_entries() {
+    char input[10];
+    int n = 0;
+
+    printf("How many entries do you wish to remove? ");
+    read_n_chars(9, input);
+    n = atoi(input);
+
+    FILE* file = fopen(HIST_LOG, "r");
+    if (file == NULL) {
+        printf("No history to clean.\n");
+        pause_();
+        return;
+    }
+
+    // Lê todas as linhas para memória
+    char* lines[2048];
+    size_t count = 0;
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), file) && count < 2048) {
+        lines[count] = strdup(buffer);
+        count++;
+    }
+    fclose(file);
+
+    if (n <= 0 || n >= count) {
+        printf("Invalid number. History only contains %zu entries.\n", count);
+        for (size_t i = 0; i < count; i++) free(lines[i]);
+        pause_();
+        return;
+    }
+
+    
+    file = fopen(HIST_LOG, "w");
+    if (file == NULL) {
+        printf("File error - Opening file.\n");
+        for (size_t i = 0; i < count; i++) free(lines[i]);
+        pause_();
+        return;
+    }
+    for (size_t i = n; i < count; i++) {
+        fputs(lines[i], file);
+        free(lines[i]);
+    }
+    fclose(file);
+
+    printf("Removed %d entries.\n", n);
+    pause_();
+}
 // MENUS
 void mng_student_account(){
 	/*
@@ -1068,7 +1136,9 @@ void mng_biblman_account(){
 			case 1: add_book(); break;
 			case 2: remove_book(); break;
 			// TODO: case 3) Check return history | Any + Logging (MacUser)
+			case 3: return_history(); break;
 			// TODO: case 4) Remove old return history entries | Any + Logging (MacUser)
+			case 4: remove_old_history_entries(); break;
 			case 5: regist(); break;
 			case 6: reset_password(); break;
 			case 7: change_password(); break;
