@@ -869,6 +869,90 @@ void checkout_book(){
 	return;
 }
 
+void return_book(){
+	char id_book_str[15];
+	printf("Insert ISBN Book: ");
+	read_n_chars(14, id_book_str);
+	if(strlen2(id_book_str)!=13){
+		printf("ISBN is not valid!\n");
+		pause_();
+		return;
+	}
+	BOOK* book = get_book_by_id(BOOK_ARCHIVE_DIR, id_book_str);
+	if (book == NULL){
+		printf("Book not found!\n");
+		pause_();
+		return;
+	}
+	if (book->requested_by == 0){
+		printf("Book not currently requested!\n");
+		delete_linked_list(book->queue_for_students, free);
+		free(book);
+		pause_();
+		return;
+	}
+	uint32_t _temp = CURRENT_LOGIN.uid;
+	CURRENT_LOGIN.uid = book->requested_by;
+	char buffer[15+6];
+	snprintf(buffer, sizeof(buffer),"User %d logd out.", CURRENT_LOGIN.uid);
+	log_action(book, MAIN_LOG, "RET");
+	log_action(book, HIST_LOG, "RET");
+
+	book->requested_by = 0;
+	while (BOOK_ARCHIVE_DIR[(uint8_t) book->requested_by] != 0x00) book->requested_by++;
+	char file_path[(uint8_t) book->requested_by + 18]; // 18 = 13 + 5 + .csv + \0
+	book->requested_by = CURRENT_LOGIN.uid;
+	CURRENT_LOGIN.uid = _temp;
+
+	snprintf(file_path, sizeof(file_path), "%s" ISBN_FORMAT ".csv", BOOK_ARCHIVE_DIR, book->uid);
+	FILE* file = fopen(file_path, "r+");
+	if (file == NULL) {
+		printf("Book file not found!\n");
+		delete_linked_list(book->queue_for_students, free);
+		free(book);
+		pause_();
+		return;
+	}
+
+	if (book->queue_for_students->size != 0){
+		fseek(file, 0, SEEK_SET);  // 9789727221561
+		fprintf(file, "%05d", *( (uint32_t*) book->queue_for_students->head->data));
+
+		fseek(file, book->queue_offset, SEEK_SET);
+		shift_bytes_up(file, 6);
+		end_file(file);
+		fclose(file);
+
+		_temp = CURRENT_LOGIN.uid;
+		CURRENT_LOGIN.uid = *( (uint32_t*) book->queue_for_students->head->data);
+
+		printf("Book returned sucsessfully!\nFirst student on waiting list is now with the book!\n");
+		log_action(book, MAIN_LOG, "DQU");
+
+		CURRENT_LOGIN.uid = _temp;
+
+		delete_linked_list(book->queue_for_students, free);
+		free(book);
+		pause_();
+		return;
+	}
+	else { // there is not queue
+		fseek(file, 0, SEEK_SET);  // 9789727221561
+		fprintf(file, "00000");
+		fclose(file);
+		printf("Book returned sucsessfully!\n");
+		delete_linked_list(book->queue_for_students, free);
+		free(book);
+		pause_();
+		return;
+	}
+	fclose(file);
+	delete_linked_list(book->queue_for_students, free);
+    free(book);
+	pause_();
+	return;
+}
+
 // MENUS
 void mng_student_account(){
 	/*
@@ -973,7 +1057,7 @@ void biblman_account(){
 		} else
 		switch(_escolha_menu){
 			case 0: break;
-			// TODO: case 1) Return Book | PEDRO + Loggin (MacUser)
+			case 1: return_book(); break;
 			case 2: list_book_by_ISBN(); break;
 			case 3: list_books_alphabeticly(); break;
 			case 4: list_available_books(); break;

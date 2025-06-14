@@ -169,6 +169,7 @@ BOOK* get_book_by_id(const char* archive_folder, char id[14]){
 	uint32_t* lol;
 	while(1){
 		bytesRead = fread(buffer, 1, 6, file);
+		buffer[5] = 0x00;
 		if (bytesRead == 0 || buffer[0] == 0x0A) break;
 		lol = malloc(sizeof(uint32_t));
 		*lol = (uint32_t) str_to_int64_t(buffer);
@@ -401,6 +402,33 @@ uint8_t log_requisition(ACCOUNT* user, BOOK* book, const char* file_path, const 
 	}
 	return 1; // Error, no name found
 }
+
+void shift_bytes_up(FILE* file, uint32_t offset){
+	uint32_t current_pos = ftell(file);
+	uint8_t buffer_size = 12;
+	char buffer[buffer_size+1];
+	buffer[buffer_size] = 0x00;
+	uint8_t bytesRead;
+
+	while (1){
+		fseek(file, current_pos+offset, SEEK_SET);
+		bytesRead = fread(buffer, 1, buffer_size, file);
+		if (bytesRead==buffer_size){
+			fseek(file, current_pos, SEEK_SET);
+			fprintf(file, "%s", buffer);
+			current_pos += buffer_size;
+		} else {
+			fseek(file, current_pos, SEEK_SET);
+			buffer[bytesRead] = 0x00;
+			fprintf(file, "%s", buffer);
+			current_pos += buffer_size;
+			break;
+		}
+	}
+	fseek(file, -1*offset, SEEK_END);
+	return;
+}
+
 
 #ifdef __database_helper__
 	const char* BOOK_ARCHIVE_DIR = "./assets/books/"; // MUST INCLUDE THE SLASH (/), parts of the code and buffers depend on that
