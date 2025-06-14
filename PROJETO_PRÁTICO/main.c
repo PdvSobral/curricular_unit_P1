@@ -138,6 +138,7 @@ uint8_t log_action(BOOK* book, const char* log_file_path, const char mode[4]){
     }
 
     int8_t bytesRead;
+    fseek(file2, 6, SEEK_SET);
     while (1) {
         bytesRead = fread(buffer, 1, 6, file2);
         if (bytesRead == 0) break;
@@ -781,6 +782,9 @@ void list_books_alphabeticly(){
 	pause_();
 }
 
+int32_t is_current(void* a){
+	return *(uint32_t*) a - CURRENT_LOGIN.uid + 1;
+}
 void checkout_book(){
 	// FIXME: PEDRO check
 	char id_book_str[15];
@@ -797,25 +801,75 @@ void checkout_book(){
 		pause_();
 		return;
 	}
-	if (book->requested_by == CURRENT_LOGIN.uid){}
-	#pragma GCC error "DO NOT RUN YET"
-	// TODO: Finish the function | PEDRO
 
-
-	book->requested_by = 0;
-    while (BOOK_ARCHIVE_DIR[(uint8_t) book->requested_by] != 0x00) book->requested_by++;
-    char file_path[(uint8_t) book->requested_by + 18]; // 18 = 13 + 5 + .csv + \0
-    snprintf(file_path, sizeof(file_path), "%s%13lu.csv", BOOK_ARCHIVE_DIR, book->uid);
-
-    FILE* file = fopen(file_path, "r");
-    if (!file) {
-        printf("Book file not found!\n");
-        free(book);
-        pause_();
-        return;
-    }
-	printf("Book found!\n");
+	#pragma GCC warning "DO NOT RUN YET" // TODO: Finish the function | PEDRO
+	// 9789727221561
+	if (book->requested_by == 0){
+		while (BOOK_ARCHIVE_DIR[(uint8_t) book->requested_by] != 0x00) book->requested_by++;
+		char file_path[(uint8_t) book->requested_by + 18]; // 18 = 13 + 5 + .csv + \0
+		snprintf(file_path, sizeof(file_path), "%s" ISBN_FORMAT ".csv", BOOK_ARCHIVE_DIR, book->uid);
+		FILE* file = fopen(file_path, "r+");
+		if (file == NULL) {
+			printf("Book file not found!\n");
+			delete_linked_list(book->queue_for_students, free);
+			free(book);
+			pause_();
+			return;
+		}
+		fprintf(file, "%u", CURRENT_LOGIN.uid);
+		fclose(file);
+		printf("Book requested sucessfully!\n");
+		log_action(book, MAIN_LOG, "REQ");
+		delete_linked_list(book->queue_for_students, free);
+		free(book);
+		pause_();
+		return;
+	}
+	else if (book->requested_by == CURRENT_LOGIN.uid){
+		printf("Book is already checked out by current user!\n");
+		fflush(stdout);
+		delete_linked_list(book->queue_for_students, free);
+		free(book);
+		pause_();
+		return;
+	}
+	else { // if user is not checking the book, and current is not null, then let's check queue
+		int32_t in_queue = find_node(book->queue_for_students, is_current);
+		if (in_queue >= 0){
+			printf("User is already in queue for this book!\n");
+			fflush(stdout);
+			delete_linked_list(book->queue_for_students, free);
+			free(book);
+			pause_();
+			return;
+		}
+		while (BOOK_ARCHIVE_DIR[(uint8_t) book->requested_by] != 0x00) book->requested_by++;
+		char file_path[(uint8_t) book->requested_by + 18]; // 18 = 13 + 5 + .csv + \0
+		snprintf(file_path, sizeof(file_path), "%s" ISBN_FORMAT ".csv", BOOK_ARCHIVE_DIR, book->uid);
+		FILE* file = fopen(file_path, "r+");
+		if (file == NULL) {
+			printf("Book file not found!\n");
+			delete_linked_list(book->queue_for_students, free);
+			free(book);
+			pause_();
+			return;
+		}
+		fseek(file, 0, SEEK_END);  // 9789727221561
+		printf("%d\n", book->queue_for_students->size);
+		if (book->queue_for_students->size == 0) fprintf(file, "%u\n", CURRENT_LOGIN.uid);
+		else { fseek(file, -1, SEEK_CUR); fprintf(file, ":%u\n", CURRENT_LOGIN.uid);}
+		fclose(file);
+		printf("Book already requested by another user!\nCurrent user added to request queue sucessfully!\n");
+		log_action(book, MAIN_LOG, "REQ");
+		delete_linked_list(book->queue_for_students, free);
+		free(book);
+		pause_();
+		return;
+	}
+	delete_linked_list(book->queue_for_students, free);
+    free(book);
 	pause_();
+	return;
 }
 
 // MENUS

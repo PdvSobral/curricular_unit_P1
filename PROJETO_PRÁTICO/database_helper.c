@@ -115,6 +115,7 @@ BOOK* get_book_by_id(const char* archive_folder, char id[14]){
 	Return:
 		BOOK* | NULL : Returns a pointer to a book object corresponding to the id. Null if an error ocurred or it was not found.
 	*/
+	// TODO: FIX QUEING ERRORS AND OFFSET. | PEDRO
 	BOOK* book = (BOOK*) malloc(sizeof(BOOK));
 	if (book == NULL) return NULL;
 	book->uid = 0;
