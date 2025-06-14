@@ -955,24 +955,42 @@ void return_book(){
 
 void change_name(){
 	printf("Loading database for update...\n");
+	fflush(stdout);
 	FILE* file = fopen(USER_DATABASE, "r+");
     if (file == NULL) return;
     printf("Searching for user regist...\n");
+	fflush(stdout);
     uint32_t beggining_of_line = CURRENT_LOGIN.name_offset - 41;
-    // TODO: find out end of line to compute offset
+	uint8_t buffer[6];
+	buffer[5] = 0x00;
+	uint8_t bytesRead;
+	fseek(file, CURRENT_LOGIN.name_offset, SEEK_SET);
+	while (buffer[5] != 0xFF) {
+		bytesRead = fread(buffer, 1, 5, file);
+		if (bytesRead == 0) break;
+		for (uint8_t i = 0; i < bytesRead; i++) {
+			if (buffer[i] == '\n') {
+				fseek(file, -1 * (bytesRead-i), SEEK_CUR);
+				buffer[5] = 0xFF;
+				break;
+			}
+		}
+	}
+	uint32_t offset = ftell(file) - beggining_of_line;
     printf("Reseting user regist...\n");
-    // TODO: then shift up
-
-   	printf("Please enter your new name now: ");
+   	fflush(stdout);
+	fseek(file, beggining_of_line, SEEK_SET);
+	shift_bytes_up(file, offset+1); // + \n
+	end_file(file);
+	printf("Reseting user regist...\n");
+	fflush(stdout);
 	fprintf(file, "%05d:%s:%1u:", CURRENT_LOGIN.uid, CURRENT_LOGIN.password, CURRENT_LOGIN.type);  // 0 should be 'account_type'
     fclose(file);
-
-	print_between_format("->", "\033[32m", CABECALHO_LEN, 1);
-	print_bottom(CABECALHO_LEN, 1);
-	printf("\033[2A\033[5C");
+	printf("\nPlease enter your new name now: ");
 	fflush(stdout);
 	read_text_and_append_to_file(USER_DATABASE, MAX_NAME_LENGHT, 1);
     printf("\nAccount registered successfully.\n");
+	fflush(stdout);
 	pause_();
 	return;
 }
