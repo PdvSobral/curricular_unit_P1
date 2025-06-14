@@ -664,6 +664,8 @@ uint8_t check_book_info(){
 		return 2;
 	}
 	print_book_data(book);
+	delete_linked_list(book->queue_for_students, free);
+	free(book);
 	pause_();
 	return 0;
 }
@@ -786,7 +788,6 @@ int32_t is_current(void* a){
 	return *(uint32_t*) a - CURRENT_LOGIN.uid + 1;
 }
 void checkout_book(){
-	// FIXME: PEDRO check
 	char id_book_str[15];
 	printf("Insert ISBN Book: ");
 	read_n_chars(14, id_book_str);
@@ -801,9 +802,6 @@ void checkout_book(){
 		pause_();
 		return;
 	}
-
-	#pragma GCC warning "DO NOT RUN YET" // TODO: Finish the function | PEDRO
-	// 9789727221561
 	if (book->requested_by == 0){
 		while (BOOK_ARCHIVE_DIR[(uint8_t) book->requested_by] != 0x00) book->requested_by++;
 		char file_path[(uint8_t) book->requested_by + 18]; // 18 = 13 + 5 + .csv + \0
@@ -855,12 +853,11 @@ void checkout_book(){
 			return;
 		}
 		fseek(file, 0, SEEK_END);  // 9789727221561
-		printf("%d\n", book->queue_for_students->size);
 		if (book->queue_for_students->size == 0) fprintf(file, "%u\n", CURRENT_LOGIN.uid);
 		else { fseek(file, -1, SEEK_CUR); fprintf(file, ":%u\n", CURRENT_LOGIN.uid);}
 		fclose(file);
 		printf("Book already requested by another user!\nCurrent user added to request queue sucessfully!\n");
-		log_action(book, MAIN_LOG, "REQ");
+		log_action(book, MAIN_LOG, "QUE");
 		delete_linked_list(book->queue_for_students, free);
 		free(book);
 		pause_();
@@ -945,7 +942,7 @@ void mng_biblman_account(){
 			case 1: add_book(); break;
 			case 2: remove_book(); break;
 			// TODO: case 3) Check return history | Any + Logging (MacUser)
-			case 4: list_available_books(); break;
+			// TODO: case 4) Remove old return history entries | Any + Logging (MacUser)
 			case 5: regist(); break;
 			case 6: reset_password(); break;
 			case 7: change_password(); break;
@@ -976,10 +973,10 @@ void biblman_account(){
 		} else
 		switch(_escolha_menu){
 			case 0: break;
-			// TODO: case 1) Return Book | Any + Loggin (MacUser)
+			// TODO: case 1) Return Book | PEDRO + Loggin (MacUser)
 			case 2: list_book_by_ISBN(); break;
 			case 3: list_books_alphabeticly(); break;
-			// TODO: case 4) List available books | PEDRO (ou em caso de excesso de trabalho Alex)
+			case 4: list_available_books(); break;
 			case 5: check_book_info(); break;
 			case 6: mng_biblman_account(); break;
 			default: printf("\nFunção ainda não implementada!!\n"); pause_();
