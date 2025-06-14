@@ -990,6 +990,7 @@ void return_history(){
     while (fgets(line, sizeof(line), file)) {
         printf("%s", line);
     }
+	
     fclose(file);
     pause_();
 
