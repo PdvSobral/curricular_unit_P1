@@ -953,6 +953,30 @@ void return_book(){
 	return;
 }
 
+void change_name(){
+	printf("Loading database for update...\n");
+	FILE* file = fopen(USER_DATABASE, "r+");
+    if (file == NULL) return;
+    printf("Searching for user regist...\n");
+    uint32_t beggining_of_line = CURRENT_LOGIN.name_offset - 41;
+    // TODO: find out end of line to compute offset
+    printf("Reseting user regist...\n");
+    // TODO: then shift up
+
+   	printf("Please enter your new name now: ");
+	fprintf(file, "%05d:%s:%1u:", CURRENT_LOGIN.uid, CURRENT_LOGIN.password, CURRENT_LOGIN.type);  // 0 should be 'account_type'
+    fclose(file);
+
+	print_between_format("->", "\033[32m", CABECALHO_LEN, 1);
+	print_bottom(CABECALHO_LEN, 1);
+	printf("\033[2A\033[5C");
+	fflush(stdout);
+	read_text_and_append_to_file(USER_DATABASE, MAX_NAME_LENGHT, 1);
+    printf("\nAccount registered successfully.\n");
+	pause_();
+	return;
+}
+
 // MENUS
 void mng_student_account(){
 	/*
@@ -969,7 +993,7 @@ void mng_student_account(){
 		if(_escolha_menu==0) break;
 		clear_screen();
 		switch(_escolha_menu){
-			// TODO: Add case 1) Change account name | PEDRO
+			case 1: change_name(); break;
 			case 2: change_password(); break;
 			default: printf("\nFunção ainda não implementada!!\n"); pause_();
 		}
