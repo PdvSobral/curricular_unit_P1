@@ -977,6 +977,23 @@ void change_name(){
 	return;
 }
 
+void return_history(){
+	printf("Loading return history...\n");
+	FILE* file = fopen(HIST_LOG, "r+");
+	if (file == NULL){
+		printf("No history to return.\n");
+		pause_();
+		return;
+	}
+	printf("Reading history...\n");
+	 char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        printf("%s", line);
+    }
+    fclose(file);
+    pause_();
+
+}
 // MENUS
 void mng_student_account(){
 	/*
@@ -1050,6 +1067,7 @@ void mng_biblman_account(){
 			case 1: add_book(); break;
 			case 2: remove_book(); break;
 			// TODO: case 3) Check return history | Any + Logging (MacUser)
+			case 3: return_history(); break;
 			// TODO: case 4) Remove old return history entries | Any + Logging (MacUser)
 			case 5: regist(); break;
 			case 6: reset_password(); break;
