@@ -1,6 +1,6 @@
 /*
-Author: Pedro Sobral
-Date: 08-04-2025
+@Author: Pedro Sobral
+@Date: 08/04/2025
 
 Good practices that I like to adhere to.
 */
