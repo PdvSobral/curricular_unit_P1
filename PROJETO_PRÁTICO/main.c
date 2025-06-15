@@ -1020,53 +1020,61 @@ void print_return_history(){
 }
 
 void remove_old_history_entries() {
-	// TODO: To review | PEDRO
-    char input[10];
-    uint16_t n = 0;
+    char buffer[21];
+    uint16_t how_many_to_remove;
 
     printf("How many entries do you wish to remove? ");
-    read_n_chars(9, input);
-    n = atoi(input);
+    read_n_chars(20, buffer);
+    how_many_to_remove = (uint16_t) str_to_int64_t_flag(buffer, (uint8_t*) &(buffer[20]));
+	if (buffer[0] == 0){
+		printf("Invalid number of entries to remove!");
+		pause_();
+		return;
+	}
+	buffer[20] = 0x00;
 
-    FILE* file = fopen(HIST_LOG, "r");
-    if (file == NULL) {
-        printf("No history to clean.\n");
-        pause_();
-        return;
-    }
-	/*
-    // Lê todas as linhas para memória
-    char* lines[2048];
-    size_t count = 0;
-    char buffer[256];
-    while (fgets(buffer, sizeof(buffer), file) && count < 2048) {
-        lines[count] = strdup(buffer);
-        count++;
-    }
-    fclose(file);
+    FILE* file = fopen(HIST_LOG, "r+");
+	if (file == NULL){
+		printf("Return history log file not found.\n");
+		pause_();
+		return;
+	}
 
-    if (n <= 0 || n >= count) {
-        printf("Invalid number. History only contains %zu entries.\n", count);
-        for (size_t i = 0; i < count; i++) free(lines[i]);
+	if (fread(buffer, 1, 20, file) == 0){
+		printf("No history to remove!\n");
+		fclose(file);
+		pause_();
+		return;
+	}
+
+	uint8_t bytesRead;
+	fseek(file, CURRENT_LOGIN.name_offset, SEEK_SET);
+	how_many_to_remove--;
+	while ((uint8_t) buffer[5] != 0xFF) {
+		bytesRead = fread(buffer, 1, 5, file);
+		if (bytesRead == 0) break;
+		for (uint8_t i = 0; i < bytesRead; i++) {
+			if (buffer[i] == '\n') {
+				fseek(file, (-1 * (bytesRead-i))+1, SEEK_CUR);
+				how_many_to_remove--;
+				if (how_many_to_remove == 0) buffer[5] = 0xFF;
+			}
+		}
+	}
+	if(how_many_to_remove != 0){
+		printf("There are not enough history entries to cover such a large number!\nPlease try a lower one.\n");
         pause_();
         return;
-    }
-    
-    file = fopen(HIST_LOG, "w");
-    if (file == NULL) {
-        printf("File error - Opening file.\n");
-        for (size_t i = 0; i < count; i++) free(lines[i]);
-        pause_();
-        return;
-    }
-    for (size_t i = n; i < count; i++) {
-        fputs(lines[i], file);
-        free(lines[i]);
-    }
-    fclose(file);
-	*/
-    printf("Removed %d entries.\n", n);
-    pause_();
+	}
+	uint32_t offset = ftell(file);
+	printf("Proceding with removal...\n");
+	fseek(file, 0, SEEK_SET);
+	shift_bytes_up(file, offset);
+	end_file(file);
+	fclose(file);
+	printf("Done!\n");
+	pause_();
+	return;
 }
 
 // MENUS
