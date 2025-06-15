@@ -2,12 +2,12 @@
 /Exercícios e Materias TP/
 /.vscode/
 /output/
-/PROJETO_PRÁTICO/main
-/PROJETO_PRÁTICO/md5
-/PROJETO_PRÁTICO/linked_lists
-/PROJETO_PRÁTICO/database_helper
-/PROJETO_PRÁTICO/functions
-/PROJETO_PRÁTICO/testes
-/PROJETO_PRÁTICO/testes2
-/PROJETO_PRÁTICO/none.txt
-/PROJETO_PRÁTICO/assets/*.log
+/main
+/md5
+/linked_lists
+/database_helper
+/functions
+/testes
+/testes2
+/none.txt
+/assets/*.log
