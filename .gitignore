@@ -1,5 +1,4 @@
 /.idea/
-/Exercícios e Materias TP/
 /.vscode/
 /output/
 /PROJETO_PRÁTICO/main
@@ -7,7 +6,5 @@
 /PROJETO_PRÁTICO/linked_lists
 /PROJETO_PRÁTICO/database_helper
 /PROJETO_PRÁTICO/functions
-/PROJETO_PRÁTICO/testes
-/PROJETO_PRÁTICO/testes2
 /PROJETO_PRÁTICO/none.txt
 /PROJETO_PRÁTICO/assets/*.log
