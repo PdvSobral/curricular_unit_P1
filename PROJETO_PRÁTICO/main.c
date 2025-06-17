@@ -748,7 +748,7 @@ uint8_t add_book(){
 	
 	FILE* file = fopen(caminho, "a");
     if (file == NULL) return 1;
-    fprintf(file, "%05d:%s\n%s\n%05d\n", 0, title, description, 0);
+    fprintf(file, "%05d:%s\n%s\n", 0, title, description);
     fclose(file);
     printf("Book registered successfully.\n");
     char buffer[24+15];
@@ -855,7 +855,6 @@ void print_isbn_name(void* a){
 		None
 	*/
 	// FIXME: To make new interface | PEDRO
-	clear_screen();
     uint64_t* book_isbn_int = (uint64_t*)a;
     char buffer[7];
     buffer[6] = 0x00;
